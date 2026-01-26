@@ -1,7 +1,24 @@
 import { NextResponse } from "next/server";
+import { scrapeProduct } from "@/scraper/scraper";
 
 export async function GET() {
-  return NextResponse.json({ message: "GET request received" });
+  try {
+    const result = await scrapeProduct();
+    return NextResponse.json({
+      "scrape-test-result": {
+        productName: result.productName,
+        currentPrice: result.priceInfo.currentPrice,
+        originalPrice: result.priceInfo.originalPrice,
+        promoMessage: result.priceInfo.promoMessage,
+        attributes: result.attributes,
+      },
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: `Scraping failed: ${error}` },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST() {
