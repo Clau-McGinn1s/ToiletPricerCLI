@@ -5,6 +5,7 @@ import DatabaseSetup from '../database/setup-database';
 import dropDatabase from '../database/drop-database';
 import { fetchProductLinks } from '../scraper/linkFetcher';
 import { scrapeProduct } from '../scraper/scraper';
+import { updateStaleProducts } from '../scraper/updateProducts';
 
 dotenv.config();
 
@@ -98,6 +99,21 @@ program
     console.log('=== Pipeline complete ===');
     console.log(`Total products scraped: ${productCount}`);
     console.log(`Products saved to database: ${dbSuccessCount}`);
+  });
+
+program
+  .command('update')
+  .description('Update stale products that have not been updated in X days')
+  .requiredOption('-d, --days <number>', 'Number of days since last update', parseInt)
+  .action(async (options) => {
+    console.log(`Updating products not updated in the last ${options.days} days...`);
+
+    const result = await updateStaleProducts(options.days);
+
+    console.log('');
+    console.log('=== Update complete ===');
+    console.log(`Products checked: ${result.totalChecked}`);
+    console.log(`Products updated: ${result.totalUpdated}`);
   });
 
 program.parse();
