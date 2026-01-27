@@ -49,15 +49,13 @@ program
   .description('Scrape product data from fetched links')
   .option('-t, --test', 'Run in test mode (only 5 products)', false)
   .option('-d, --database', 'Save results to database', false)
-  .option('-f, --file', 'Save results to JSON file', true)
   .action(async (options) => {
     console.log('Starting scraper...');
-    console.log(`Options: test=${options.test}, database=${options.database}, file=${options.file}`);
+    console.log(`Options: test=${options.test}, database=${options.database}`);
 
     const result = await scrapeProduct({
       test: options.test,
       saveToDatabase: options.database,
-      saveToFile: options.file,
     });
 
     console.log(`Scraped ${result.scrapedProducts.products.length} products`);
@@ -93,7 +91,6 @@ program
     const scrapeResult = await scrapeProduct({
       test: options.test,
       saveToDatabase: true,
-      saveToFile: true,
     });
 
     const productCount = scrapeResult.scrapedProducts.products.length;

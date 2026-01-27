@@ -11,7 +11,7 @@ dotenv.config();
 
 const BASE_URL = "https://www.homedepot.com.mx";
 const TARGET_URLS_FILE = "src/scraper/urls/targetUrls.json";
-const OUTPUT_FILE = "PageScrapTest.json";
+const LOG_FILE = "scraper.log";
 
 interface TargetUrls {
   urls: Record<string, string[]>;
@@ -182,7 +182,13 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
 export interface ScrapeOptions {
   test?: boolean;
   saveToDatabase?: boolean;
-  saveToFile?: boolean;
+}
+
+function logScrapedProduct(name: string): void {
+  const timestamp = new Date().toISOString();
+  const logEntry = `${name} scraped at ${timestamp}\n`;
+  const logPath = path.join(process.cwd(), LOG_FILE);
+  fs.appendFileSync(logPath, logEntry);
 }
 
 export interface ScrapeAndSaveResult {
@@ -246,7 +252,7 @@ async function saveProductsToDatabase(
 export async function scrapeProduct(
   options: ScrapeOptions = {}
 ): Promise<ScrapeAndSaveResult> {
-  const { test = false, saveToDatabase = false, saveToFile = true } = options;
+  const { test = false, saveToDatabase = false } = options;
   let browser: Browser | undefined;
 
   try {
@@ -331,6 +337,7 @@ export async function scrapeProduct(
         try {
           const result = await scrapeProductPage(page, link, categoryKey);
           products.push(result);
+          logScrapedProduct(result.name);
           console.log(`Successfully scraped ${link}`);
         } catch (err) {
           console.error(`Failed to scrape ${link}:`, err);
@@ -354,12 +361,7 @@ export async function scrapeProduct(
       products: products
     };
 
-    // Write to JSON file if enabled
-    if (saveToFile) {
-      const outputPath = path.join(process.cwd(), OUTPUT_FILE);
-      fs.writeFileSync(outputPath, JSON.stringify(allResults, null, 2));
-      console.log(`Results saved to ${OUTPUT_FILE}`);
-    }
+    console.log(`\nLog file saved to ${LOG_FILE}`);
 
     // Save to database if enabled
     let databaseResults: InsertResult[] | undefined;
@@ -386,23 +388,7 @@ export async function scrapeProduct(
 
 // Standalone function to save existing scraped data to database
 export async function saveScrapedDataToDatabase(
-  data?: AllScrapedResults
+  data: AllScrapedResults
 ): Promise<InsertResult[]> {
-  let products: ScrapeResult[];
-
-  if (data) {
-    products = data.products;
-  } else {
-    // Read from the output file
-    const outputPath = path.join(process.cwd(), OUTPUT_FILE);
-    if (!fs.existsSync(outputPath)) {
-      throw new Error(`${OUTPUT_FILE} not found. Run the scraper first.`);
-    }
-    const fileData: AllScrapedResults = JSON.parse(
-      fs.readFileSync(outputPath, "utf-8")
-    );
-    products = fileData.products;
-  }
-
-  return saveProductsToDatabase(products);
+  return saveProductsToDatabase(data.products);
 }
