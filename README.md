@@ -240,6 +240,87 @@ Updates existing products in the database with fresh data.
 3. Updates all fields including price, description, attributes
 4. Optionally re-downloads images (only updates image path if new image downloaded)
 
+## API Endpoints
+
+The application exposes REST API endpoints to access scraped data.
+
+### `GET /api/toilet`
+
+Returns all products from the database with optional filtering.
+
+**Query Parameters:**
+
+| Parameter | Description | Match Type |
+|-----------|-------------|------------|
+| `id` | Product ID | Exact |
+| `type` | Product category (wc, sink, faucet, shower-head) | Exact |
+| `match` | Feature match field | Exact |
+| `color` | Product color | Partial (LIKE) |
+
+**Examples:**
+```bash
+# Get all products
+GET /api/toilet
+
+# Get product by ID
+GET /api/toilet?id=5
+
+# Get all toilets
+GET /api/toilet?type=wc
+
+# Filter by type and match
+GET /api/toilet?type=wc&match=alargado
+
+# Filter by color (partial match)
+GET /api/toilet?color=blanco
+
+# Combine multiple filters
+GET /api/toilet?type=faucet&color=cromado
+```
+
+**Response:**
+```json
+{
+  "message": "Found 10 products",
+  "count": 10,
+  "query": { "id": null, "type": "wc", "match": null, "color": null },
+  "products": [...]
+}
+```
+
+### `GET /api/toilet/links`
+
+Returns base URLs and target URLs for all categories.
+
+**Query Parameters:**
+
+| Parameter | Description |
+|-----------|-------------|
+| `type` | Filter by category (wc, sink, faucet, shower-head) |
+
+**Examples:**
+```bash
+# Get all URLs
+GET /api/toilet/links
+
+# Get URLs for specific category
+GET /api/toilet/links?type=wc
+```
+
+**Response:**
+```json
+{
+  "message": "Found 4 categories with 60 target links",
+  "baseUrls": { "urls": { "wc": "https://...", ... } },
+  "targetUrls": { "urls": { "wc": ["...", "..."], ... } },
+  "summary": {
+    "categories": 4,
+    "totalTargetLinks": 60,
+    "linksPerCategory": { "wc": 15, "sink": 15, ... }
+  }
+}
+```
+
 ## Configuration Files
 
 ### `src/scraper/urls/baseUrls.json`
