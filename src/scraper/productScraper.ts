@@ -14,8 +14,6 @@ const TARGET_URLS_FILE = "src/scraper/urls/targetUrls.json";
 const LOG_FILE = "scraper.log";
 const MEDIA_DIR = "src/media";
 
-const IMAGE_SELECTOR = 'div[style*="cursor: crosshair"] > img';
-
 interface TargetUrls {
   urls: Record<string, string[]>;
 }
@@ -223,10 +221,17 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
   // Try to get and download the product image
   let imagePath: string | null = null;
   try {
-    await page.waitForSelector(IMAGE_SELECTOR, { timeout: 5000 });
-    const imageUrl = await page.$eval(IMAGE_SELECTOR, (el) =>
-      el.getAttribute("src")
-    );
+    // Find img element with src ending in "-d.jpg"
+    const imageUrl = await page.evaluate(() => {
+      const images = document.querySelectorAll('img');
+      for (const img of images) {
+        const src = img.getAttribute('src');
+        if (src && src.endsWith('-d.jpg')) {
+          return src;
+        }
+      }
+      return null;
+    });
 
     if (imageUrl && productName) {
       imagePath = await downloadImage(imageUrl, type, productName);
