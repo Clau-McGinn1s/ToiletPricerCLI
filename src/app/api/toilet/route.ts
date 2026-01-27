@@ -1,42 +1,62 @@
 import { NextResponse } from "next/server";
-import { scrapeProduct, saveScrapedDataToDatabase } from "@/scraper/productScraper";
+import mysql from "mysql2/promise";
+import { getDatabaseConfig } from "@/database/config";
 
 export async function GET() {
-  try {
-    // Scrape products and save to both file and database
-    const result = await scrapeProduct({
-      test: true,
-      saveToDatabase: true,
-      saveToFile: true,
-    });
+  let connection: mysql.Connection | null = null;
 
-    const dbSuccessCount = result.databaseResults?.filter((r) => r.success).length ?? 0;
-    const totalProducts = result.scrapedProducts.products.length;
+  try {
+    const config = getDatabaseConfig();
+    connection = await mysql.createConnection(config);
+
+    const [rows] = await connection.execute("SELECT * FROM products ORDER BY created_at DESC");
+    const products = rows as mysql.RowDataPacket[];
+
+    if (products.length === 0) {
+      return NextResponse.json(
+        {
+          message: "No products found in database",
+          instructions: {
+            setup: "Run the CLI to set up the database and scrape products:",
+            commands: [
+              "npm run cli -- set-up:fresh",
+              "npm run cli -- set-up:fresh -t  (test mode with fewer products)",
+              "npm run cli -- set-up:fresh -l 20  (limit 20 links per category)",
+            ],
+          },
+          products: [],
+        },
+        { status: 200 }
+      );
+    }
 
     return NextResponse.json({
-      message: `Scraped ${totalProducts} products. Saved ${dbSuccessCount} to database.`,
-      ...result,
+      message: `Found ${products.length} products`,
+      count: products.length,
+      products,
     });
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
     return NextResponse.json(
-      { error: `Scraping failed: ${error}` },
+      {
+        error: "Database connection failed",
+        details: errorMessage,
+        instructions: {
+          setup: "Make sure the database is set up. Run the CLI:",
+          commands: [
+            "npm run cli -- db:setup  (setup database only)",
+            "npm run cli -- set-up:fresh  (full setup with scraping)",
+          ],
+          environment: "Ensure your .env file has the correct database credentials:",
+          envVariables: ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME", "DB_PORT"],
+        },
+      },
       { status: 500 }
     );
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
   }
-}
-
-export async function POST() {
-  return NextResponse.json({ message: "POST request received" });
-}
-
-export async function PUT() {
-  return NextResponse.json({ message: "PUT request received" });
-}
-
-export async function PATCH() {
-  return NextResponse.json({ message: "PATCH request received" });
-}
-
-export async function DELETE() {
-  return NextResponse.json({ message: "DELETE request received" });
 }
