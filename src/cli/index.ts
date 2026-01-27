@@ -62,7 +62,7 @@ program
   .description('Scrape product data from fetched links')
   .option('-t, --test', 'Run in test mode (only 5 products)', false)
   .option('-d, --database', 'Save results to database', false)
-  .option('-i, --images', 'Download product images', false)
+  .option('--no-images', 'Skip downloading product images')
   .action(async (options) => {
     console.log('Starting scraper...');
     console.log(`Options: test=${options.test}, database=${options.database}, images=${options.images}`);
@@ -86,7 +86,7 @@ program
   .description('Run full pipeline: setup db, clean media, fetch links, scrape, and save to database')
   .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
   .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
-  .option('-i, --images', 'Download product images', false)
+  .option('--no-images', 'Skip downloading product images')
   .option('--no-filter', 'Disable filtering of links')
   .action(async (options) => {
     console.log('=== Starting full pipeline ===\n');
@@ -133,7 +133,7 @@ program
   .description('Drop database, clean media, and run full pipeline: setup db, fetch links, scrape, and save to database')
   .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
   .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
-  .option('-i, --images', 'Download product images', false)
+  .option('--no-images', 'Skip downloading product images')
   .option('--no-filter', 'Disable filtering of links')
   .action(async (options) => {
     console.log('=== Starting fresh pipeline ===\n');
@@ -184,7 +184,7 @@ program
   .command('update')
   .description('Update stale products that have not been updated in X days (0 = update all)')
   .option('-d, --days <number>', 'Number of days since last update (0 = all)', parseInt, 0)
-  .option('-i, --images', 'Download product images', false)
+  .option('--no-images', 'Skip downloading product images')
   .action(async (options) => {
     if (options.days === 0) {
       console.log('Updating all products...');

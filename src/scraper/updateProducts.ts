@@ -369,7 +369,7 @@ export interface UpdateOptions {
 }
 
 export async function updateStaleProducts(options: UpdateOptions = {}): Promise<UpdateProductsResult> {
-  const { days = 0, downloadImages = false } = options;
+  const { days = 0, downloadImages = true } = options;
   const config = getDatabaseConfig();
   const connection = await mysql.createConnection(config);
   let browser: Browser | undefined;

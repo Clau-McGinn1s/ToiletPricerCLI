@@ -408,7 +408,7 @@ async function saveProductsToDatabase(
 export async function scrapeProduct(
   options: ScrapeOptions = {}
 ): Promise<ScrapeAndSaveResult> {
-  const { test = false, saveToDatabase = false, downloadImages = false } = options;
+  const { test = false, saveToDatabase = false, downloadImages = true } = options;
   let browser: Browser | undefined;
 
   try {
