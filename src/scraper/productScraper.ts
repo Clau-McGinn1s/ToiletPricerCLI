@@ -12,6 +12,9 @@ dotenv.config();
 const BASE_URL = "https://www.homedepot.com.mx";
 const TARGET_URLS_FILE = "src/scraper/urls/targetUrls.json";
 const LOG_FILE = "scraper.log";
+const MEDIA_DIR = "src/media";
+
+const IMAGE_SELECTOR = 'div[style*="cursor: crosshair"] > img';
 
 interface TargetUrls {
   urls: Record<string, string[]>;
@@ -49,6 +52,56 @@ export interface ScrapeResult {
 
 export interface AllScrapedResults {
   products: ScrapeResult[];
+}
+
+function sanitizeFileName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 100);
+}
+
+async function downloadImage(
+  imageUrl: string,
+  productType: string,
+  productName: string
+): Promise<string | null> {
+  try {
+    // Create directory path
+    const sanitizedName = sanitizeFileName(productName);
+    const dirPath = path.join(process.cwd(), MEDIA_DIR, productType);
+
+    // Ensure directory exists
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+    // Get file extension from URL
+    const urlPath = new URL(imageUrl).pathname;
+    const ext = path.extname(urlPath) || '.jpg';
+    const fileName = `${sanitizedName}${ext}`;
+    const filePath = path.join(dirPath, fileName);
+
+    // Download image
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      console.error(`Failed to download image: ${response.status}`);
+      return null;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    fs.writeFileSync(filePath, buffer);
+
+    // Return relative path for database storage
+    const relativePath = path.join(MEDIA_DIR, productType, fileName);
+    console.log(`Image saved: ${relativePath}`);
+    return relativePath;
+  } catch (err) {
+    console.error(`Error downloading image: ${err}`);
+    return null;
+  }
 }
 
 function parsePriceText(rawText: string): PriceInfo {
@@ -167,6 +220,21 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
 
   const [colorVal, heightVal, lengthVal, widthVal] = attributes;
 
+  // Try to get and download the product image
+  let imagePath: string | null = null;
+  try {
+    await page.waitForSelector(IMAGE_SELECTOR, { timeout: 5000 });
+    const imageUrl = await page.$eval(IMAGE_SELECTOR, (el) =>
+      el.getAttribute("src")
+    );
+
+    if (imageUrl && productName) {
+      imagePath = await downloadImage(imageUrl, type, productName);
+    }
+  } catch (err) {
+    console.error(`Failed to get image for ${url}:`, err);
+  }
+
   return {
     name: productName || "Product name not found",
     price: priceInfo.price,
@@ -178,7 +246,7 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
     length: lengthVal,
     type: type,
     match: null,
-    image: null,
+    image: imagePath,
     url: fullUrl
   };
 }
