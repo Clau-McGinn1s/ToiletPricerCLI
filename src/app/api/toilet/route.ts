@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { scrapeProduct, saveScrapedDataToDatabase } from "@/scraper/scraper";
+import { scrapeProduct, saveScrapedDataToDatabase } from "@/scraper/productScraper";
 
 export async function GET() {
   try {

@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import DatabaseSetup from '../database/setup-database';
 import dropDatabase from '../database/drop-database';
 import { fetchProductLinks } from '../scraper/linkFetcher';
-import { scrapeProduct } from '../scraper/scraper';
+import { scrapeProduct } from '../scraper/productScraper';
 import { updateStaleProducts } from '../scraper/updateProducts';
 
 dotenv.config();
