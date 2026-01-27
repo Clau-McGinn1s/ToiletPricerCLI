@@ -41,3 +41,9 @@ scraper.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Ignore all files in directory
+directory_name/*
+
+# But keep these placeholder files
+!directory_name/.gitkeep

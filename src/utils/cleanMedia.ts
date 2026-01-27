@@ -13,6 +13,10 @@ export function cleanMedia(): void {
   let deletedCount = 0;
 
   for (const file of files) {
+    if (file === '.gitkeep') {
+      continue;
+    }
+
     const filePath = path.join(MEDIA_DIR, file);
     const stat = fs.statSync(filePath);
 
