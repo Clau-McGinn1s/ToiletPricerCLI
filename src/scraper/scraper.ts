@@ -11,40 +11,36 @@ const PRODUCT_NAME_SELECTOR =
 
 const PRICE_SELECTOR = '[data-testid="price-format"]';
 
-const ATTRIBUTE_VALUES_SELECTOR = '[id^="attValue"]';
-
-const SPECIFIC_ATTRIBUTE_IDS = ["attValue-alto", "attValue-ancho", "attValue-color"];
+const SPECIFIC_ATTRIBUTE_IDS = ["attValue-color", "attValue-alto", "attValue-ancho", "attValue-largo"];
 
 const SPECS_DRAWER_TRIGGER = "p.text-espicificaciones";
 
-export interface AttributeValue {
-  id: string;
-  value: string;
-}
-
 export interface PriceInfo {
-  currentPrice: string;
-  originalPrice: string;
+  price_alt: string;
+  price: string;
   promoMessage: string;
 }
 
 export interface ScrapeResult {
+  name: string;
+  price: string;
+  price_alt?: string | null;
+  description?: string | null;
+  color?: string | null;
+  height?: string | null;
+  width?: string | null;
+  length?: string | null;
   url: string;
-  productName: string;
-  priceInfo: PriceInfo;
-  attributes: AttributeValue[];
 }
 
 export interface AllScrapedResults {
-  totalProducts: number;
-  scrapedAt: string;
   products: ScrapeResult[];
 }
 
 function parsePriceText(rawText: string): PriceInfo {
   const result: PriceInfo = {
-    currentPrice: "Not found",
-    originalPrice: "Not found",
+    price_alt: "Not found",
+    price: "Not found",
     promoMessage: "",
   };
 
@@ -53,19 +49,21 @@ function parsePriceText(rawText: string): PriceInfo {
     result.promoMessage = savingsMatch[0];
   }
 
-  const originalMatch = rawText.match(/Antes\s*\$([\d,]+\.?\d*)/i);
-  if (originalMatch) {
-    result.originalPrice = `$${originalMatch[1]}`;
-  }
-
   const currentMatch = rawText.match(/\$([\d,]+)(\d{2})(?=\s*Antes|\s*Meses|$)/);
   if (currentMatch) {
-    result.currentPrice = `$${currentMatch[1]}.${currentMatch[2]}`;
+    result.price_alt = `${currentMatch[1].replace(",","")}.${currentMatch[2]}`;
   } else {
     const altMatch = rawText.match(/Ahorras\s*\$[\d,]+\.?\d*\s*\$([\d,]+)(\d{2})/i);
     if (altMatch) {
-      result.currentPrice = `$${altMatch[1]}.${altMatch[2]}`;
+      result.price_alt = `${altMatch[1].replace(",","")}.${altMatch[2]}`;
     }
+  }
+
+    const originalMatch = rawText.match(/Antes\s*\$([\d,]+\.?\d*)/i);
+  if (originalMatch) {
+    result.price = `${originalMatch[1].replace(",","")}`;
+  }else{
+    result.price = result.price_alt;
   }
 
   const monthlyMatch = rawText.match(/\$([\d,]+\.?\d*)\s*por mes a (\d+)\s*MSI/i);
@@ -115,7 +113,7 @@ async function scrapeProductPage(page: Page, url: string): Promise<ScrapeResult>
   const priceInfo = parsePriceText(rawPriceText);
 
   // Click on specifications element to open the drawer
-  let attributes: AttributeValue[] = [];
+  const attributes: string[] = [];
   try {
     await page.waitForSelector(SPECS_DRAWER_TRIGGER, { timeout: 10000 });
 
@@ -129,40 +127,42 @@ async function scrapeProductPage(page: Page, url: string): Promise<ScrapeResult>
     });
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    try {
-      await page.waitForSelector(ATTRIBUTE_VALUES_SELECTOR, { timeout: 15000 });
 
-      attributes = await page.$$eval(ATTRIBUTE_VALUES_SELECTOR, (elements) =>
-        elements.map((el) => ({
-          id: el.id,
-          value: el.textContent?.trim() || "",
-        }))
-      );
-    } catch {
-      for (const attrId of SPECIFIC_ATTRIBUTE_IDS) {
-        try {
-          const selector = `#${attrId}`;
-          await page.waitForSelector(selector, { timeout: 3000 });
-          const value = await page.$eval(selector, (el) =>
-            el.textContent?.trim() || ""
-          );
-          if (value) {
-            attributes.push({ id: attrId, value });
-          }
-        } catch {
-          continue;
+    for (const attrId of SPECIFIC_ATTRIBUTE_IDS) {
+      try {
+        const selector = `#${attrId}`;
+        await page.waitForSelector(selector, { timeout: 3000 });
+        const value = await page.$eval(selector, (el) =>
+          el.textContent?.trim() || ""
+        );
+        if (value) {
+          attributes.push(value);
         }
+        else{
+          attributes.push("Not Found");
+        }
+      } catch {
+          attributes.push("Not Found");
+        continue;
       }
     }
+    
   } catch (err) {
     console.error(`Failed to get attributes for ${url}:`, err);
   }
 
+  const [colorVal, heightVal, lengthVal, widthVal] = attributes;
+
   return {
-    url: fullUrl,
-    productName: productName || "Product name not found",
-    priceInfo,
-    attributes,
+    name: productName || "Product name not found",
+    price: priceInfo.price,
+    price_alt : priceInfo.price_alt,
+    color : colorVal,
+    description : priceInfo.promoMessage,
+    height : heightVal,
+    width : widthVal,
+    length : lengthVal,
+    url: fullUrl
   };
 }
 
@@ -224,25 +224,25 @@ export async function scrapeProduct(test: boolean = false): Promise<AllScrapedRe
       try {
         const result = await scrapeProductPage(page, link);
         products.push(result);
+        console.log(`Successfully scraped ${link}`)
       } catch (err) {
         console.error(`Failed to scrape ${link}:`, err);
         products.push({
-          url: link,
-          productName: "Failed to scrape",
-          priceInfo: {
-            currentPrice: "Error",
-            originalPrice: "Error",
-            promoMessage: "",
-          },
-          attributes: [],
+          name: "Failed to scrape",
+          price: "-",
+          price_alt: "-",
+          color: "-",
+          description: "-",
+          height: "-",
+          width: "-",
+          length: "-",
+          url: link
         });
       }
     }
 
     const allResults: AllScrapedResults = {
-      totalProducts: products.length,
-      scrapedAt: new Date().toISOString(),
-      products,
+      products: products
     };
 
     // Write to JSON file
