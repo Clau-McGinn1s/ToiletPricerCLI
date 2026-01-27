@@ -4,6 +4,7 @@ import * as path from "path";
 
 const BASE_URLS_FILE = "src/scraper/urls/baseUrls.json";
 const TARGET_URLS_FILE = "src/scraper/urls/targetUrls.json";
+const FILTERS_FILE = "src/scraper/config/filters.json";
 
 const PRODUCT_LINK_SELECTOR = "a.styled--link-container";
 
@@ -15,11 +16,21 @@ export interface TargetUrls {
   urls: Record<string, string[]>;
 }
 
+interface CategoryFilter {
+  filter: string[];
+  feature: string[];
+}
+
+interface FiltersConfig {
+  [key: string]: CategoryFilter;
+}
+
 async function fetchLinksFromCategory(
   page: Page,
   baseUrl: string,
   categoryKey: string,
-  limit: number
+  limit: number,
+  filterWords: string[]
 ): Promise<string[]> {
   const allLinks: string[] = [];
   let pageNumber = 1;
@@ -54,8 +65,11 @@ async function fetchLinksFromCategory(
 
       const pageLinks = await page.$$eval(PRODUCT_LINK_SELECTOR, (elements) =>
         elements
-          .map((el) => el.getAttribute("href"))
-          .filter((href): href is string => href !== null)
+          .map((el) => ({
+            href: el.getAttribute("href"),
+            text: el.textContent?.toLowerCase() || "",
+          }))
+          .filter((item): item is { href: string; text: string } => item.href !== null)
       );
 
       if (pageLinks.length === 0) {
@@ -63,7 +77,13 @@ async function fetchLinksFromCategory(
         break;
       }
 
-      for (const link of pageLinks) {
+      for (const { href: link, text } of pageLinks) {
+        // Skip if link text contains any filter word
+        const shouldFilter = filterWords.some((word) => text.includes(word.toLowerCase()));
+        if (shouldFilter) {
+          continue;
+        }
+
         if (!allLinks.includes(link)) {
           allLinks.push(link);
           // Stop if limit is reached
@@ -100,6 +120,16 @@ export async function fetchProductLinks(limit: number = 15): Promise<TargetUrls>
 
     if (categoryKeys.length === 0) {
       throw new Error("No URLs found in baseUrls.json");
+    }
+
+    // Load filters
+    const filtersPath = path.join(process.cwd(), FILTERS_FILE);
+    let filtersData: FiltersConfig = {};
+    if (fs.existsSync(filtersPath)) {
+      filtersData = JSON.parse(fs.readFileSync(filtersPath, "utf-8"));
+      console.log("Loaded filters from filters.json");
+    } else {
+      console.log("No filters.json found, proceeding without filters");
     }
 
     console.log(`Found ${categoryKeys.length} categories to fetch: ${categoryKeys.join(", ")}`);
@@ -139,7 +169,11 @@ export async function fetchProductLinks(limit: number = 15): Promise<TargetUrls>
     // Iterate through each category
     for (const key of categoryKeys) {
       const baseUrl = baseUrlsData.urls[key];
-      const links = await fetchLinksFromCategory(page, baseUrl, key, limit);
+      const filterWords = filtersData[key]?.filter || [];
+      if (filterWords.length > 0) {
+        console.log(`Applying filters for ${key}: ${filterWords.join(", ")}`);
+      }
+      const links = await fetchLinksFromCategory(page, baseUrl, key, limit, filterWords);
       result.urls[key] = links;
     }
 
