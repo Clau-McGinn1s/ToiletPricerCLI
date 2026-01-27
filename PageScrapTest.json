@@ -1,0 +1,90 @@
+{
+  "productName": "SANITARIO DE DOS PIEZAS COBRIAL",
+  "priceInfo": {
+    "currentPrice": "$2,799.00",
+    "originalPrice": "$3,199.00",
+    "promoMessage": "Ahorras $400.00 | 12 MSI de $233.25"
+  },
+  "attributes": [
+    {
+      "id": "attValue-acabado",
+      "value": "Brillante"
+    },
+    {
+      "id": "attValue-accesorios",
+      "value": "Sí"
+    },
+    {
+      "id": "attValue-alto",
+      "value": "82"
+    },
+    {
+      "id": "attValue-altura-de-la-taza",
+      "value": "-"
+    },
+    {
+      "id": "attValue-ancho",
+      "value": "45.7 cm"
+    },
+    {
+      "id": "attValue-capacidad-tamano",
+      "value": "82 x 72.4 x 45.7 cm"
+    },
+    {
+      "id": "attValue-color",
+      "value": "Blanco"
+    },
+    {
+      "id": "attValue-consumo-de-agua",
+      "value": "4.8 lt"
+    },
+    {
+      "id": "attValue-contenido-del-empaque",
+      "value": "1 sanitario"
+    },
+    {
+      "id": "attValue-desalojo",
+      "value": "1000 gr"
+    },
+    {
+      "id": "attValue-garantia-proveedor",
+      "value": "100 años"
+    },
+    {
+      "id": "attValue-largo",
+      "value": "82 cm"
+    },
+    {
+      "id": "attValue-material",
+      "value": "Cerámica"
+    },
+    {
+      "id": "attValue-modelo",
+      "value": "2ec08w"
+    },
+    {
+      "id": "attValue-peso",
+      "value": "41.640 kg"
+    },
+    {
+      "id": "attValue-presion",
+      "value": "-"
+    },
+    {
+      "id": "attValue-profundidad",
+      "value": "72.4 cm"
+    },
+    {
+      "id": "attValue-sistema-de-descarga",
+      "value": "-"
+    },
+    {
+      "id": "attValue-tipo",
+      "value": "Dos piezas"
+    },
+    {
+      "id": "attValue-tipo-de-taza",
+      "value": "-"
+    }
+  ]
+}

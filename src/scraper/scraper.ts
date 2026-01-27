@@ -1,4 +1,8 @@
 import puppeteer from "puppeteer";
+import * as fs from "fs";
+import * as path from "path";
+
+const OUTPUT_FILE = "PageScrapTest.json";
 
 const TARGET_URL =
   "https://www.homedepot.com.mx/p/glacier-bay-sanitario-de-dos-piezas-cobrial-2ec08w-163770";
@@ -194,11 +198,17 @@ export async function scrapeProduct(): Promise<ScrapeResult> {
       console.error("Failed to get attributes:", err);
     }
 
-    return {
+    const result: ScrapeResult = {
       productName: productName || "Product name not found",
       priceInfo,
       attributes,
     };
+
+    // Write to JSON file
+    const outputPath = path.join(process.cwd(), OUTPUT_FILE);
+    fs.writeFileSync(outputPath, JSON.stringify(result, null, 2));
+
+    return result;
   } catch (error) {
     console.error("Scraping error:", error);
     throw new Error(`Failed to scrape: ${error}`);
