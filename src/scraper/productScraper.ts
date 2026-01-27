@@ -30,7 +30,6 @@ const SPECS_DRAWER_TRIGGER = "p.text-espicificaciones";
 export interface PriceInfo {
   price_alt: string;
   price: string;
-  promoMessage: string;
 }
 
 export interface ScrapeResult {
@@ -106,13 +105,7 @@ function parsePriceText(rawText: string): PriceInfo {
   const result: PriceInfo = {
     price_alt: "Not found",
     price: "Not found",
-    promoMessage: "",
   };
-
-  const savingsMatch = rawText.match(/Ahorras\s*\$[\d,]+\.?\d*/i);
-  if (savingsMatch) {
-    result.promoMessage = savingsMatch[0];
-  }
 
   const currentMatch = rawText.match(/\$([\d,]+)(\d{2})(?=\s*Antes|\s*Meses|$)/);
   if (currentMatch) {
@@ -124,19 +117,11 @@ function parsePriceText(rawText: string): PriceInfo {
     }
   }
 
-    const originalMatch = rawText.match(/Antes\s*\$([\d,]+\.?\d*)/i);
+  const originalMatch = rawText.match(/Antes\s*\$([\d,]+\.?\d*)/i);
   if (originalMatch) {
     result.price = `${originalMatch[1].replace(",","")}`;
-  }else{
+  } else {
     result.price = result.price_alt;
-  }
-
-  const monthlyMatch = rawText.match(/\$([\d,]+\.?\d*)\s*por mes a (\d+)\s*MSI/i);
-  if (monthlyMatch) {
-    const monthlyInfo = `${monthlyMatch[2]} MSI de $${monthlyMatch[1]}`;
-    result.promoMessage = result.promoMessage
-      ? `${result.promoMessage} | ${monthlyInfo}`
-      : monthlyInfo;
   }
 
   return result;
@@ -218,6 +203,21 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
 
   const [colorVal, heightVal, lengthVal, widthVal] = attributes;
 
+  // Try to get the product description
+  let productDescription: string | null = null;
+  try {
+    productDescription = await page.evaluate(() => {
+      const descElement = document.querySelector('p.MuiTypography-root.sc-eDvSVe.kBIVDt.sc-gFmLcz.fRHTBS.MuiTypography-body1');
+      if (descElement) {
+        const text = descElement.textContent?.trim() || '';
+        return text.substring(0, 300);
+      }
+      return null;
+    });
+  } catch (err) {
+    console.error(`Failed to get description for ${url}:`, err);
+  }
+
   // Try to get and download the product image
   let imagePath: string | null = null;
   const maxImageAttempts = 5;
@@ -284,7 +284,7 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
     price: priceInfo.price,
     price_alt: priceInfo.price_alt,
     color: colorVal,
-    description: priceInfo.promoMessage,
+    description: productDescription,
     height: heightVal,
     width: widthVal,
     length: lengthVal,
