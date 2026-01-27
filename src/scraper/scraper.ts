@@ -42,6 +42,8 @@ export interface ScrapeResult {
   width?: string | null;
   length?: string | null;
   type: string;
+  match?: string | null;
+  image?: string | null;
   url: string;
 }
 
@@ -175,6 +177,8 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
     width: widthVal,
     length: lengthVal,
     type: type,
+    match: null,
+    image: null,
     url: fullUrl
   };
 }
@@ -229,6 +233,8 @@ async function saveProductsToDatabase(
         width: product.width,
         length: product.length,
         type: product.type,
+        match: product.match,
+        image: product.image,
         url: product.url,
       };
 
@@ -351,6 +357,8 @@ export async function scrapeProduct(
             width: "-",
             length: "-",
             type: categoryKey,
+            match: null,
+            image: null,
             url: link
           });
         }

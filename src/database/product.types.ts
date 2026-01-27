@@ -9,6 +9,8 @@ export interface Product {
   width?: number | null;
   length?: number | null;
   type: string;
+  match?: string | null;
+  image?: string | null;
   url?: string | null;
   created_at?: Date;
   updated_at?: Date;
@@ -24,6 +26,8 @@ export interface RawProductInput {
   width?: string | null;
   length?: string | null;
   type: string;
+  match?: string | null;
+  image?: string | null;
   url?: string | null;
 }
 

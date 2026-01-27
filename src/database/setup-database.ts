@@ -107,6 +107,8 @@ class DatabaseSetup {
             width DECIMAL(8, 2) NULL,
             length DECIMAL(8, 2) NULL,
             type VARCHAR(50) NOT NULL,
+            match_field VARCHAR(255) NULL,
+            image VARCHAR(500) NULL,
             url VARCHAR(355) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

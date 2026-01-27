@@ -29,6 +29,8 @@ export interface ProductRow {
   width?: number | null;
   length?: number | null;
   type: string;
+  match?: string | null;
+  image?: string | null;
   created_at?: Date;
   updated_at?: Date;
 }

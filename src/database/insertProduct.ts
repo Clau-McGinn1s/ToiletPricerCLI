@@ -32,8 +32,10 @@ export async function insertProduct(
         width,
         length,
         type,
+        match_field,
+        image,
         url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     // Prepare values, converting undefined to null for optional fields
@@ -47,6 +49,8 @@ export async function insertProduct(
       data.width ?? null,
       data.length ?? null,
       data.type,
+      data.match ?? null,
+      data.image ?? null,
       data.url ?? null,
     ];
 
@@ -115,6 +119,8 @@ export function validateProduct(raw: RawProductInput): {success: boolean, data? 
         width: raw.width ? parsedWidth : null,
         length: raw.length ? parsedLength : null,
         type: raw.type,
+        match: raw.match || null,
+        image: raw.image || null,
         url: raw.url
     }
   };
