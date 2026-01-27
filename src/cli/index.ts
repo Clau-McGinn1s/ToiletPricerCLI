@@ -69,6 +69,8 @@ program
   .action(async (options) => {
     console.log('Starting scraper...');
     console.log(`Options: test=${options.test}, database=${options.database}, images=${options.images}`);
+    console.log('\n⚠️  WARNING: Scraping takes approximately 2 minutes per product.');
+    console.log('   This process may take a long time depending on the number of links.\n');
 
     const result = await scrapeProduct({
       test: options.test,
@@ -116,6 +118,10 @@ program
 
     // Step 4: Scrape and save to database
     console.log('Step 4: Scraping products and saving to database...');
+    const estimatedTime = Math.round((totalLinks * 2) / 60);
+    console.log(`\n⚠️  WARNING: Scraping takes approximately 2 minutes per product.`);
+    console.log(`   Estimated time for ${totalLinks} products: ~${estimatedTime > 0 ? estimatedTime : '<1'} hour(s)\n`);
+
     const scrapeResult = await scrapeProduct({
       test: options.test,
       saveToDatabase: true,
@@ -168,6 +174,10 @@ program
 
     // Step 5: Scrape and save to database
     console.log('Step 5: Scraping products and saving to database...');
+    const estimatedTime = Math.round((totalLinks * 2) / 60);
+    console.log(`\n⚠️  WARNING: Scraping takes approximately 2 minutes per product.`);
+    console.log(`   Estimated time for ${totalLinks} products: ~${estimatedTime > 0 ? estimatedTime : '<1'} hour(s)\n`);
+
     const scrapeResult = await scrapeProduct({
       test: options.test,
       saveToDatabase: true,
@@ -194,6 +204,8 @@ program
     } else {
       console.log(`Updating products not updated in the last ${options.days} days...`);
     }
+    console.log('\n⚠️  WARNING: Updating takes approximately 2 minutes per product.');
+    console.log('   This process may take a long time depending on the number of products.\n');
 
     const result = await updateStaleProducts({
       days: options.days,
