@@ -61,14 +61,27 @@ function sanitizeFileName(name: string): string {
 }
 
 async function downloadImage(
+  page: Page,
   imageUrl: string,
   productType: string,
   productName: string
 ): Promise<string | null> {
-  const maxAttempts = 2;
+  const maxAttempts = 5;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
+      // On retry attempts, scroll to the image container element
+      if (attempt > 1) {
+        console.log(`Attempt ${attempt}/${maxAttempts}: Scrolling to image container...`);
+        await page.evaluate(() => {
+          const imageContainer = document.querySelector('div[style*="cursor: crosshair"][style*="user-select: none"]');
+          if (imageContainer) {
+            imageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+
       // Create directory path
       const sanitizedName = sanitizeFileName(productName);
       const dirPath = path.join(process.cwd(), MEDIA_DIR, productType);
@@ -248,7 +261,7 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
     });
 
     if (imageUrl && productName) {
-      imagePath = await downloadImage(imageUrl, type, productName);
+      imagePath = await downloadImage(page, imageUrl, type, productName);
     }
   } catch (err) {
     console.error(`Failed to get image for ${url}:`, err);
