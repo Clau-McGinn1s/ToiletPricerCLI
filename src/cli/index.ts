@@ -6,6 +6,7 @@ import dropDatabase from '../database/drop-database';
 import { fetchProductLinks } from '../scraper/linkFetcher';
 import { scrapeProduct } from '../scraper/productScraper';
 import { updateStaleProducts } from '../scraper/updateProducts';
+import { cleanMedia } from '../utils/cleanMedia';
 
 dotenv.config();
 
@@ -31,6 +32,14 @@ program
   .action(async () => {
     console.log('Dropping database...');
     await dropDatabase();
+  });
+
+program
+  .command('clean-media')
+  .description('Delete all contents of the media directory')
+  .action(() => {
+    console.log('Cleaning media directory...');
+    cleanMedia();
   });
 
 program
@@ -68,7 +77,7 @@ program
 
 program
   .command('set-up')
-  .description('Run full pipeline: setup db, fetch links, scrape, and save to database')
+  .description('Run full pipeline: setup db, clean media, fetch links, scrape, and save to database')
   .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
   .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
   .action(async (options) => {
@@ -80,14 +89,19 @@ program
     await dbSetup.setup();
     console.log('');
 
-    // Step 2: Fetch links
-    console.log('Step 2: Fetching product links...');
+    // Step 2: Clean media directory
+    console.log('Step 2: Cleaning media directory...');
+    cleanMedia();
+    console.log('');
+
+    // Step 3: Fetch links
+    console.log('Step 3: Fetching product links...');
     const linkResult = await fetchProductLinks(options.limit);
     const totalLinks = Object.values(linkResult.urls).reduce((sum, links) => sum + links.length, 0);
     console.log(`Fetched ${totalLinks} links across ${Object.keys(linkResult.urls).length} categories\n`);
 
-    // Step 3: Scrape and save to database
-    console.log('Step 3: Scraping products and saving to database...');
+    // Step 4: Scrape and save to database
+    console.log('Step 4: Scraping products and saving to database...');
     const scrapeResult = await scrapeProduct({
       test: options.test,
       saveToDatabase: true,
@@ -104,7 +118,7 @@ program
 
 program
   .command('set-up:fresh')
-  .description('Drop database and run full pipeline: setup db, fetch links, scrape, and save to database')
+  .description('Drop database, clean media, and run full pipeline: setup db, fetch links, scrape, and save to database')
   .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
   .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
   .action(async (options) => {
@@ -115,20 +129,25 @@ program
     await dropDatabase();
     console.log('');
 
-    // Step 2: Setup database
-    console.log('Step 2: Setting up database...');
+    // Step 2: Clean media directory
+    console.log('Step 2: Cleaning media directory...');
+    cleanMedia();
+    console.log('');
+
+    // Step 3: Setup database
+    console.log('Step 3: Setting up database...');
     const dbSetup = new DatabaseSetup();
     await dbSetup.setup();
     console.log('');
 
-    // Step 3: Fetch links
-    console.log('Step 3: Fetching product links...');
+    // Step 4: Fetch links
+    console.log('Step 4: Fetching product links...');
     const linkResult = await fetchProductLinks(options.limit);
     const totalLinks = Object.values(linkResult.urls).reduce((sum, links) => sum + links.length, 0);
     console.log(`Fetched ${totalLinks} links across ${Object.keys(linkResult.urls).length} categories\n`);
 
-    // Step 4: Scrape and save to database
-    console.log('Step 4: Scraping products and saving to database...');
+    // Step 5: Scrape and save to database
+    console.log('Step 5: Scraping products and saving to database...');
     const scrapeResult = await scrapeProduct({
       test: options.test,
       saveToDatabase: true,
