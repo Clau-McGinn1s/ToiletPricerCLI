@@ -10,8 +10,12 @@ import { RawProductInput, InsertResult } from "../database/product.types";
 dotenv.config();
 
 const BASE_URL = "https://www.homedepot.com.mx";
-const LINK_LIST_FILE = "LinkList.json";
+const TARGET_URLS_FILE = "src/scraper/urls/targetUrls.json";
 const OUTPUT_FILE = "PageScrapTest.json";
+
+interface TargetUrls {
+  urls: Record<string, string[]>;
+}
 
 const PRODUCT_NAME_SELECTOR =
   'h1.MuiTypography-root.sc-eDvSVe.jEoTgR.product-name.MuiTypography-body1[weight="light"]';
@@ -85,7 +89,7 @@ function parsePriceText(rawText: string): PriceInfo {
   return result;
 }
 
-async function scrapeProductPage(page: Page, url: string): Promise<ScrapeResult> {
+async function scrapeProductPage(page: Page, url: string, type: string): Promise<ScrapeResult> {
   const fullUrl = url.startsWith("http") ? url : `${BASE_URL}${url}`;
 
   await page.goto(fullUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -170,7 +174,7 @@ async function scrapeProductPage(page: Page, url: string): Promise<ScrapeResult>
     height: heightVal,
     width: widthVal,
     length: lengthVal,
-    type: "wc",
+    type: type,
     url: fullUrl
   };
 }
@@ -246,23 +250,32 @@ export async function scrapeProduct(
   let browser: Browser | undefined;
 
   try {
-    // Read links from LinkList.json
-    const linkListPath = path.join(process.cwd(), LINK_LIST_FILE);
-    if (!fs.existsSync(linkListPath)) {
-      throw new Error(`${LINK_LIST_FILE} not found. Run the link fetcher first.`);
+    // Read links from targetUrls.json
+    const targetUrlsPath = path.join(process.cwd(), TARGET_URLS_FILE);
+    if (!fs.existsSync(targetUrlsPath)) {
+      throw new Error(`${TARGET_URLS_FILE} not found. Run the link fetcher first.`);
     }
 
-    const linkListData = JSON.parse(fs.readFileSync(linkListPath, "utf-8"));
-    let links: string[] = linkListData.links?.retretes || [];
+    const targetUrlsData: TargetUrls = JSON.parse(fs.readFileSync(targetUrlsPath, "utf-8"));
 
-    if (links.length === 0) {
-      throw new Error("No links found in LinkList.json");
+    // Check if urls object exists and is not empty
+    if (!targetUrlsData.urls || Object.keys(targetUrlsData.urls).length === 0) {
+      throw new Error("targetUrls.json is empty. Please run 'npm run cli -- fetch-links' first to fetch product links.");
     }
 
-    // Limit to 5 links in test mode
-    if (test) {
-      links = links.slice(0, 5);
+    const categoryKeys = Object.keys(targetUrlsData.urls);
+
+    // Count total links
+    let totalLinks = 0;
+    for (const key of categoryKeys) {
+      totalLinks += targetUrlsData.urls[key].length;
     }
+
+    if (totalLinks === 0) {
+      throw new Error("targetUrls.json contains no links. Please run 'npm run cli -- fetch-links' first to fetch product links.");
+    }
+
+    console.log(`Found ${categoryKeys.length} categories with ${totalLinks} total links`);
 
     browser = await puppeteer.launch({
       headless: "new",
@@ -292,29 +305,48 @@ export async function scrapeProduct(
     });
 
     const products: ScrapeResult[] = [];
+    let globalIndex = 0;
 
-    for (let i = 0; i < links.length; i++) {
-      const link = links[i];
-      console.log(`Scraping ${i + 1}/${links.length}: ${link}`);
+    // Iterate through each category
+    for (const categoryKey of categoryKeys) {
+      let links = targetUrlsData.urls[categoryKey];
 
-      try {
-        const result = await scrapeProductPage(page, link);
-        products.push(result);
-        console.log(`Successfully scraped ${link}`)
-      } catch (err) {
-        console.error(`Failed to scrape ${link}:`, err);
-        products.push({
-          name: "Failed to scrape",
-          price: "-",
-          price_alt: "-",
-          color: "-",
-          description: "-",
-          height: "-",
-          width: "-",
-          length: "-",
-          type: "wc",
-          url: link
-        });
+      if (links.length === 0) {
+        console.log(`Skipping empty category: ${categoryKey}`);
+        continue;
+      }
+
+      // Limit to 5 links per category in test mode
+      if (test) {
+        links = links.slice(0, 5);
+      }
+
+      console.log(`\n=== Scraping category: ${categoryKey} (${links.length} links) ===`);
+
+      for (let i = 0; i < links.length; i++) {
+        const link = links[i];
+        globalIndex++;
+        console.log(`Scraping [${categoryKey}] ${i + 1}/${links.length} (Global: ${globalIndex}): ${link}`);
+
+        try {
+          const result = await scrapeProductPage(page, link, categoryKey);
+          products.push(result);
+          console.log(`Successfully scraped ${link}`);
+        } catch (err) {
+          console.error(`Failed to scrape ${link}:`, err);
+          products.push({
+            name: "Failed to scrape",
+            price: "-",
+            price_alt: "-",
+            color: "-",
+            description: "-",
+            height: "-",
+            width: "-",
+            length: "-",
+            type: categoryKey,
+            url: link
+          });
+        }
       }
     }
 

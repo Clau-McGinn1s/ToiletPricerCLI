@@ -36,10 +36,12 @@ program
 program
   .command('fetch-links')
   .description('Fetch product links from Home Depot')
-  .action(async () => {
+  .option('-l, --limit <number>', 'Maximum links per category', parseInt, 15)
+  .action(async (options) => {
     console.log('Fetching product links...');
-    const result = await fetchProductLinks();
-    console.log(`Fetched ${result.links.retretes.length} links`);
+    const result = await fetchProductLinks(options.limit);
+    const totalLinks = Object.values(result.urls).reduce((sum, links) => sum + links.length, 0);
+    console.log(`Fetched ${totalLinks} links across ${Object.keys(result.urls).length} categories`);
   });
 
 program
@@ -69,7 +71,8 @@ program
 program
   .command('set-up')
   .description('Run full pipeline: setup db, fetch links, scrape, and save to database')
-  .option('-t, --test', 'Run scraper in test mode (only 5 products)', false)
+  .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
+  .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
   .action(async (options) => {
     console.log('=== Starting full pipeline ===\n');
 
@@ -81,8 +84,9 @@ program
 
     // Step 2: Fetch links
     console.log('Step 2: Fetching product links...');
-    const linkResult = await fetchProductLinks();
-    console.log(`Fetched ${linkResult.links.retretes.length} links\n`);
+    const linkResult = await fetchProductLinks(options.limit);
+    const totalLinks = Object.values(linkResult.urls).reduce((sum, links) => sum + links.length, 0);
+    console.log(`Fetched ${totalLinks} links across ${Object.keys(linkResult.urls).length} categories\n`);
 
     // Step 3: Scrape and save to database
     console.log('Step 3: Scraping products and saving to database...');
