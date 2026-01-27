@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { execSync, spawn } from 'child_process';
 import dotenv from 'dotenv';
 import DatabaseSetup from '../database/setup-database';
 import dropDatabase from '../database/drop-database';
@@ -9,6 +10,8 @@ import { updateStaleProducts } from '../scraper/updateProducts';
 import { cleanMedia } from '../utils/cleanMedia';
 
 dotenv.config();
+
+const DEFAULT_PORT = parseInt(process.env.PORT || '3000', 10);
 
 const program = new Command();
 
@@ -201,6 +204,86 @@ program
     console.log('=== Update complete ===');
     console.log(`Products checked: ${result.totalChecked}`);
     console.log(`Products updated: ${result.totalUpdated}`);
+  });
+
+program
+  .command('run-server')
+  .description('Kill any process on the server port and start the development server')
+  .option('-p, --port <number>', 'Port number', parseInt, DEFAULT_PORT)
+  .action((options) => {
+    const port = options.port;
+    const isWindows = process.platform === 'win32';
+
+    console.log(`Checking for processes on port ${port}...`);
+
+    try {
+      if (isWindows) {
+        // Windows: Find and kill process on port
+        try {
+          const result = execSync(`netstat -ano | findstr :${port}`, { encoding: 'utf-8' });
+          const lines = result.trim().split('\n');
+          const pids = new Set<string>();
+
+          for (const line of lines) {
+            const parts = line.trim().split(/\s+/);
+            const pid = parts[parts.length - 1];
+            if (pid && pid !== '0') {
+              pids.add(pid);
+            }
+          }
+
+          for (const pid of pids) {
+            try {
+              execSync(`taskkill /PID ${pid} /F`, { stdio: 'ignore' });
+              console.log(`Killed process with PID ${pid}`);
+            } catch {
+              // Process might have already exited
+            }
+          }
+        } catch {
+          console.log(`No process found on port ${port}`);
+        }
+      } else {
+        // Unix/Mac: Find and kill process on port
+        try {
+          const result = execSync(`lsof -ti:${port}`, { encoding: 'utf-8' });
+          const pids = result.trim().split('\n').filter(Boolean);
+
+          for (const pid of pids) {
+            try {
+              execSync(`kill -9 ${pid}`, { stdio: 'ignore' });
+              console.log(`Killed process with PID ${pid}`);
+            } catch {
+              // Process might have already exited
+            }
+          }
+        } catch {
+          console.log(`No process found on port ${port}`);
+        }
+      }
+    } catch (err) {
+      console.log(`No process found on port ${port}`);
+    }
+
+    console.log(`\nStarting development server on port ${port}...`);
+    console.log('Press Ctrl+C to stop the server\n');
+
+    // Spawn npm run dev
+    const npmCmd = isWindows ? 'npm.cmd' : 'npm';
+    const child = spawn(npmCmd, ['run', 'dev'], {
+      stdio: 'inherit',
+      shell: true,
+      env: { ...process.env, PORT: String(port) },
+    });
+
+    child.on('error', (err) => {
+      console.error('Failed to start server:', err);
+      process.exit(1);
+    });
+
+    child.on('close', (code) => {
+      process.exit(code ?? 0);
+    });
   });
 
 program.parse();

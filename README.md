@@ -44,6 +44,7 @@ DB_USER=root
 DB_PASSWORD=your_password
 DB_NAME=toiletapi
 DB_PORT=3306
+PORT=3000
 ```
 
 | Variable | Description | Default |
@@ -53,6 +54,7 @@ DB_PORT=3306
 | `DB_PASSWORD` | MySQL password | (empty) |
 | `DB_NAME` | Database name | `my_app_db` |
 | `DB_PORT` | MySQL port | `3306` |
+| `PORT` | Development server port | `3000` |
 
 ## Database
 
@@ -166,10 +168,30 @@ Same options as `set-up`.
 ### Utility Commands
 
 #### `clean-media`
-Delete all contents of the media directory (preserves `.gitkeep`).
+Delete all contents of the media directory.
 
 ```bash
 npm run cli -- clean-media
+```
+
+#### `run-server`
+Kill any process on the server port and start the development server.
+
+```bash
+npm run cli -- run-server [options]
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-p, --port <number>` | Port number | `PORT` env variable or `3000` |
+
+Examples:
+```bash
+# Run on default port (from .env or 3000)
+npm run cli -- run-server
+
+# Run on custom port
+npm run cli -- run-server -p 4000
 ```
 
 ## Components
