@@ -23,16 +23,17 @@ export async function insertProduct(
     // Prepare SQL query
     const sql = `
       INSERT INTO products (
-        name, 
-        price, 
-        price_alt, 
-        color, 
-        description, 
-        height, 
-        width, 
+        name,
+        price,
+        price_alt,
+        color,
+        description,
+        height,
+        width,
         length,
+        type,
         url
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     // Prepare values, converting undefined to null for optional fields
@@ -45,6 +46,7 @@ export async function insertProduct(
       data.height ?? null,
       data.width ?? null,
       data.length ?? null,
+      data.type,
       data.url ?? null,
     ];
 
@@ -112,6 +114,7 @@ export function validateProduct(raw: RawProductInput): {success: boolean, data? 
         height: raw.height ? parsedHeight : null,
         width: raw.width ? parsedWidth : null,
         length: raw.length ? parsedLength : null,
+        type: raw.type,
         url: raw.url
     }
   };

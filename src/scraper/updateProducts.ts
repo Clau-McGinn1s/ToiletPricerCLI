@@ -167,17 +167,29 @@ async function scrapeProductData(page: Page, url: string) {
 
 async function getProductsToUpdate(
   connection: mysql.Connection,
-  days: number
+  days: number = 0
 ): Promise<ProductToUpdate[]> {
-  const sql = `
-    SELECT id, name, url, updated_at
-    FROM products
-    WHERE updated_at < DATE_SUB(NOW(), INTERVAL ? DAY)
-    ORDER BY updated_at ASC
-  `;
+  let sql: string;
 
-  const [rows] = await connection.execute<ProductToUpdate[]>(sql, [days]);
-  return rows;
+  if (days === 0) {
+    // Update all products
+    sql = `
+      SELECT id, name, url, updated_at
+      FROM products
+      ORDER BY updated_at ASC
+    `;
+    const [rows] = await connection.execute<ProductToUpdate[]>(sql);
+    return rows;
+  } else {
+    sql = `
+      SELECT id, name, url, updated_at
+      FROM products
+      WHERE updated_at < DATE_SUB(NOW(), INTERVAL ? DAY)
+      ORDER BY updated_at ASC
+    `;
+    const [rows] = await connection.execute<ProductToUpdate[]>(sql, [days]);
+    return rows;
+  }
 }
 
 async function updateProductInDb(
@@ -214,7 +226,7 @@ async function updateProductInDb(
   ]);
 }
 
-export async function updateStaleProducts(days: number): Promise<UpdateProductsResult> {
+export async function updateStaleProducts(days: number = 0): Promise<UpdateProductsResult> {
   const config = getDatabaseConfig();
   const connection = await mysql.createConnection(config);
   let browser: Browser | undefined;
@@ -222,7 +234,11 @@ export async function updateStaleProducts(days: number): Promise<UpdateProductsR
   const results: UpdateResult[] = [];
 
   try {
-    console.log(`Checking for products not updated in the last ${days} days...`);
+    if (days === 0) {
+      console.log("Updating all products...");
+    } else {
+      console.log(`Checking for products not updated in the last ${days} days...`);
+    }
 
     const productsToUpdate = await getProductsToUpdate(connection, days);
 

@@ -103,10 +103,14 @@ program
 
 program
   .command('update')
-  .description('Update stale products that have not been updated in X days')
-  .requiredOption('-d, --days <number>', 'Number of days since last update', parseInt)
+  .description('Update stale products that have not been updated in X days (0 = update all)')
+  .option('-d, --days <number>', 'Number of days since last update (0 = all)', parseInt, 0)
   .action(async (options) => {
-    console.log(`Updating products not updated in the last ${options.days} days...`);
+    if (options.days === 0) {
+      console.log('Updating all products...');
+    } else {
+      console.log(`Updating products not updated in the last ${options.days} days...`);
+    }
 
     const result = await updateStaleProducts(options.days);
 

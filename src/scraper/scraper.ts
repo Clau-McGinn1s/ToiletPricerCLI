@@ -37,6 +37,7 @@ export interface ScrapeResult {
   height?: string | null;
   width?: string | null;
   length?: string | null;
+  type: string;
   url: string;
 }
 
@@ -163,12 +164,13 @@ async function scrapeProductPage(page: Page, url: string): Promise<ScrapeResult>
   return {
     name: productName || "Product name not found",
     price: priceInfo.price,
-    price_alt : priceInfo.price_alt,
-    color : colorVal,
-    description : priceInfo.promoMessage,
-    height : heightVal,
-    width : widthVal,
-    length : lengthVal,
+    price_alt: priceInfo.price_alt,
+    color: colorVal,
+    description: priceInfo.promoMessage,
+    height: heightVal,
+    width: widthVal,
+    length: lengthVal,
+    type: "wc",
     url: fullUrl
   };
 }
@@ -216,6 +218,7 @@ async function saveProductsToDatabase(
         height: product.height,
         width: product.width,
         length: product.length,
+        type: product.type,
         url: product.url,
       };
 
@@ -309,6 +312,7 @@ export async function scrapeProduct(
           height: "-",
           width: "-",
           length: "-",
+          type: "wc",
           url: link
         });
       }

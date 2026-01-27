@@ -8,6 +8,7 @@ export interface Product {
   height?: number | null;
   width?: number | null;
   length?: number | null;
+  type: string;
   url?: string | null;
   created_at?: Date;
   updated_at?: Date;
@@ -22,6 +23,7 @@ export interface RawProductInput {
   height?: string | null;
   width?: string | null;
   length?: string | null;
+  type: string;
   url?: string | null;
 }
 

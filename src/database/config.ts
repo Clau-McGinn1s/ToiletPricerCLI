@@ -22,12 +22,13 @@ export interface ProductRow {
   id: number;
   name: string;
   price: number;
-  price_alt? : number | null;
-  color? : string | null; 
-  description? : string | null;
-  height? : number | null;
-  width? : number | null;
-  length? : number | null;
+  price_alt?: number | null;
+  color?: string | null;
+  description?: string | null;
+  height?: number | null;
+  width?: number | null;
+  length?: number | null;
+  type: string;
   created_at?: Date;
   updated_at?: Date;
 }
