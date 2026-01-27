@@ -65,41 +65,55 @@ async function downloadImage(
   productType: string,
   productName: string
 ): Promise<string | null> {
-  try {
-    // Create directory path
-    const sanitizedName = sanitizeFileName(productName);
-    const dirPath = path.join(process.cwd(), MEDIA_DIR, productType);
+  const maxAttempts = 2;
 
-    // Ensure directory exists
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
-    }
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      // Create directory path
+      const sanitizedName = sanitizeFileName(productName);
+      const dirPath = path.join(process.cwd(), MEDIA_DIR, productType);
 
-    // Get file extension from URL
-    const urlPath = new URL(imageUrl).pathname;
-    const ext = path.extname(urlPath) || '.jpg';
-    const fileName = `${sanitizedName}${ext}`;
-    const filePath = path.join(dirPath, fileName);
+      // Ensure directory exists
+      if (!fs.existsSync(dirPath)) {
+        fs.mkdirSync(dirPath, { recursive: true });
+      }
 
-    // Download image
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      console.error(`Failed to download image: ${response.status}`);
+      // Get file extension from URL
+      const urlPath = new URL(imageUrl).pathname;
+      const ext = path.extname(urlPath) || '.jpg';
+      const fileName = `${sanitizedName}${ext}`;
+      const filePath = path.join(dirPath, fileName);
+
+      // Download image
+      const response = await fetch(imageUrl);
+      if (!response.ok) {
+        console.error(`Attempt ${attempt}/${maxAttempts}: Failed to download image: ${response.status}`);
+        if (attempt < maxAttempts) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          continue;
+        }
+        return null;
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      fs.writeFileSync(filePath, buffer);
+
+      // Return relative path for database storage
+      const relativePath = path.join(MEDIA_DIR, productType, fileName);
+      console.log(`Image saved: ${relativePath}`);
+      return relativePath;
+    } catch (err) {
+      console.error(`Attempt ${attempt}/${maxAttempts}: Error downloading image: ${err}`);
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        continue;
+      }
       return null;
     }
-
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    fs.writeFileSync(filePath, buffer);
-
-    // Return relative path for database storage
-    const relativePath = path.join(MEDIA_DIR, productType, fileName);
-    console.log(`Image saved: ${relativePath}`);
-    return relativePath;
-  } catch (err) {
-    console.error(`Error downloading image: ${err}`);
-    return null;
   }
+
+  return null;
 }
 
 function parsePriceText(rawText: string): PriceInfo {
