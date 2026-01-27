@@ -1,10 +1,14 @@
 import puppeteer, { Browser, Page } from "puppeteer";
 import mysql, { RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import * as fs from "fs";
+import * as path from "path";
 import dotenv from "dotenv";
 import { getDatabaseConfig } from "../database/config";
 import { ProductRow } from "../database/config";
 
 dotenv.config();
+
+const MEDIA_DIR = "src/media";
 
 const PRODUCT_NAME_SELECTOR =
   'h1.MuiTypography-root.sc-eDvSVe.jEoTgR.product-name.MuiTypography-body1[weight="light"]';
@@ -18,13 +22,13 @@ const SPECS_DRAWER_TRIGGER = "p.text-espicificaciones";
 interface PriceInfo {
   price_alt: string;
   price: string;
-  promoMessage: string;
 }
 
 interface ProductToUpdate extends RowDataPacket {
   id: number;
   name: string;
   url: string;
+  type: string;
   updated_at: Date;
 }
 
@@ -45,13 +49,7 @@ function parsePriceText(rawText: string): PriceInfo {
   const result: PriceInfo = {
     price_alt: "Not found",
     price: "Not found",
-    promoMessage: "",
   };
-
-  const savingsMatch = rawText.match(/Ahorras\s*\$[\d,]+\.?\d*/i);
-  if (savingsMatch) {
-    result.promoMessage = savingsMatch[0];
-  }
 
   const currentMatch = rawText.match(/\$([\d,]+)(\d{2})(?=\s*Antes|\s*Meses|$)/);
   if (currentMatch) {
@@ -70,18 +68,55 @@ function parsePriceText(rawText: string): PriceInfo {
     result.price = result.price_alt;
   }
 
-  const monthlyMatch = rawText.match(/\$([\d,]+\.?\d*)\s*por mes a (\d+)\s*MSI/i);
-  if (monthlyMatch) {
-    const monthlyInfo = `${monthlyMatch[2]} MSI de $${monthlyMatch[1]}`;
-    result.promoMessage = result.promoMessage
-      ? `${result.promoMessage} | ${monthlyInfo}`
-      : monthlyInfo;
-  }
-
   return result;
 }
 
-async function scrapeProductData(page: Page, url: string) {
+function sanitizeFileName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 100);
+}
+
+async function downloadImage(
+  imageUrl: string,
+  productType: string,
+  productName: string
+): Promise<string | null> {
+  try {
+    const sanitizedName = sanitizeFileName(productName);
+    const dirPath = path.join(process.cwd(), MEDIA_DIR, productType);
+
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+    const urlPath = new URL(imageUrl).pathname;
+    const ext = path.extname(urlPath) || '.jpg';
+    const fileName = `${sanitizedName}${ext}`;
+    const filePath = path.join(dirPath, fileName);
+
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      console.error(`Failed to download image: ${response.status}`);
+      return null;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    fs.writeFileSync(filePath, buffer);
+
+    const relativePath = path.join(MEDIA_DIR, productType, fileName);
+    console.log(`Image saved: ${relativePath}`);
+    return relativePath;
+  } catch (err) {
+    console.error(`Error downloading image: ${err}`);
+    return null;
+  }
+}
+
+async function scrapeProductData(page: Page, url: string, type: string, downloadImages: boolean = false) {
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
 
   await page.waitForSelector(PRODUCT_NAME_SELECTOR, { timeout: 10000 });
@@ -149,19 +184,97 @@ async function scrapeProductData(page: Page, url: string) {
 
   const [colorVal, heightVal, lengthVal, widthVal] = attributes;
 
+  // Try to get the product description
+  let productDescription: string | null = null;
+  try {
+    productDescription = await page.evaluate(() => {
+      const descElement = document.querySelector('p.MuiTypography-root.sc-eDvSVe.kBIVDt.sc-gFmLcz.fRHTBS.MuiTypography-body1');
+      if (descElement) {
+        const text = descElement.textContent?.trim() || '';
+        return text.substring(0, 300);
+      }
+      return null;
+    });
+  } catch (err) {
+    console.error(`Failed to get description for ${url}:`, err);
+  }
+
   const parsedHeight = parseFloat(heightVal?.split(" ")[0] ?? "0") || null;
   const parsedWidth = parseFloat(widthVal?.split(" ")[0] ?? "0") || null;
   const parsedLength = parseFloat(lengthVal?.split(" ")[0] ?? "0") || null;
+
+  // Try to get and download the product image (if enabled)
+  let imagePath: string | null = null;
+
+  if (downloadImages) {
+    const maxImageAttempts = 5;
+
+    for (let attempt = 1; attempt <= maxImageAttempts; attempt++) {
+      try {
+        let imageUrl: string | null = null;
+
+        if (attempt === 1) {
+          const skuNumber = await page.evaluate(() => {
+            const skuElement = document.querySelector('p.MuiTypography-root.sc-eDvSVe.gGsKAy.product-caption-info.product-sku.MuiTypography-body1');
+            if (skuElement) {
+              const text = skuElement.textContent?.trim() || '';
+              const match = text.match(/SKU\s+(\d+)/i);
+              if (match) {
+                return match[1];
+              }
+            }
+            return null;
+          });
+
+          if (skuNumber) {
+            imageUrl = `https://cdn.homedepot.com.mx/productos/${skuNumber}/${skuNumber}-d.jpg`;
+          }
+        } else {
+          console.log(`Attempt ${attempt}/${maxImageAttempts}: Searching for -d.jpg image...`);
+          imageUrl = await page.evaluate(() => {
+            const prefix = 'https://cdn.homedepot.com.mx/productos/';
+            const images = document.querySelectorAll('img');
+            for (const img of images) {
+              const src = img.getAttribute('src');
+              if (src && src.startsWith(prefix) && src.endsWith('-d.jpg')) {
+                return src;
+              }
+            }
+            return null;
+          });
+        }
+
+        if (imageUrl && productName) {
+          imagePath = await downloadImage(imageUrl, type, productName);
+          if (imagePath) {
+            break;
+          }
+        }
+
+        if (attempt < maxImageAttempts) {
+          console.log(`Attempt ${attempt}/${maxImageAttempts}: Image URL not found, retrying...`);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      } catch (err) {
+        console.error(`Attempt ${attempt}/${maxImageAttempts}: Failed to get image for ${url}:`, err);
+        if (attempt >= maxImageAttempts) {
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+  }
 
   return {
     name: productName || "Product name not found",
     price: parseFloat(priceInfo.price) || 0,
     price_alt: parseFloat(priceInfo.price_alt) || null,
     color: colorVal || null,
-    description: priceInfo.promoMessage || null,
+    description: productDescription,
     height: parsedHeight,
     width: parsedWidth,
     length: parsedLength,
+    image: imagePath,
   };
 }
 
@@ -174,7 +287,7 @@ async function getProductsToUpdate(
   if (days === 0) {
     // Update all products
     sql = `
-      SELECT id, name, url, updated_at
+      SELECT id, name, url, type, updated_at
       FROM products
       ORDER BY updated_at ASC
     `;
@@ -182,7 +295,7 @@ async function getProductsToUpdate(
     return rows;
   } else {
     sql = `
-      SELECT id, name, url, updated_at
+      SELECT id, name, url, type, updated_at
       FROM products
       WHERE updated_at < DATE_SUB(NOW(), INTERVAL ? DAY)
       ORDER BY updated_at ASC
@@ -204,29 +317,59 @@ async function updateProductInDb(
     height: number | null;
     width: number | null;
     length: number | null;
+    image: string | null;
   }
 ): Promise<void> {
-  const sql = `
-    UPDATE products
-    SET name = ?, price = ?, price_alt = ?, color = ?, description = ?,
-        height = ?, width = ?, length = ?, updated_at = NOW()
-    WHERE id = ?
-  `;
+  // Only update image if a new one was downloaded
+  const sql = data.image
+    ? `
+      UPDATE products
+      SET name = ?, price = ?, price_alt = ?, color = ?, description = ?,
+          height = ?, width = ?, length = ?, image = ?, updated_at = NOW()
+      WHERE id = ?
+    `
+    : `
+      UPDATE products
+      SET name = ?, price = ?, price_alt = ?, color = ?, description = ?,
+          height = ?, width = ?, length = ?, updated_at = NOW()
+      WHERE id = ?
+    `;
 
-  await connection.execute<ResultSetHeader>(sql, [
-    data.name,
-    data.price,
-    data.price_alt,
-    data.color,
-    data.description,
-    data.height,
-    data.width,
-    data.length,
-    productId,
-  ]);
+  const params = data.image
+    ? [
+        data.name,
+        data.price,
+        data.price_alt,
+        data.color,
+        data.description,
+        data.height,
+        data.width,
+        data.length,
+        data.image,
+        productId,
+      ]
+    : [
+        data.name,
+        data.price,
+        data.price_alt,
+        data.color,
+        data.description,
+        data.height,
+        data.width,
+        data.length,
+        productId,
+      ];
+
+  await connection.execute<ResultSetHeader>(sql, params);
 }
 
-export async function updateStaleProducts(days: number = 0): Promise<UpdateProductsResult> {
+export interface UpdateOptions {
+  days?: number;
+  downloadImages?: boolean;
+}
+
+export async function updateStaleProducts(options: UpdateOptions = {}): Promise<UpdateProductsResult> {
+  const { days = 0, downloadImages = false } = options;
   const config = getDatabaseConfig();
   const connection = await mysql.createConnection(config);
   let browser: Browser | undefined;
@@ -284,7 +427,7 @@ export async function updateStaleProducts(days: number = 0): Promise<UpdateProdu
       console.log(`Updating ${i + 1}/${productsToUpdate.length}: ${product.name}`);
 
       try {
-        const scrapedData = await scrapeProductData(page, product.url);
+        const scrapedData = await scrapeProductData(page, product.url, product.type, downloadImages);
         await updateProductInDb(connection, product.id, scrapedData);
 
         results.push({

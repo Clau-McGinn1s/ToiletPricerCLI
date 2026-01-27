@@ -58,13 +58,15 @@ program
   .description('Scrape product data from fetched links')
   .option('-t, --test', 'Run in test mode (only 5 products)', false)
   .option('-d, --database', 'Save results to database', false)
+  .option('-i, --images', 'Download product images', false)
   .action(async (options) => {
     console.log('Starting scraper...');
-    console.log(`Options: test=${options.test}, database=${options.database}`);
+    console.log(`Options: test=${options.test}, database=${options.database}, images=${options.images}`);
 
     const result = await scrapeProduct({
       test: options.test,
       saveToDatabase: options.database,
+      downloadImages: options.images,
     });
 
     console.log(`Scraped ${result.scrapedProducts.products.length} products`);
@@ -80,6 +82,7 @@ program
   .description('Run full pipeline: setup db, clean media, fetch links, scrape, and save to database')
   .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
   .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
+  .option('-i, --images', 'Download product images', false)
   .action(async (options) => {
     console.log('=== Starting full pipeline ===\n');
 
@@ -105,6 +108,7 @@ program
     const scrapeResult = await scrapeProduct({
       test: options.test,
       saveToDatabase: true,
+      downloadImages: options.images,
     });
 
     const productCount = scrapeResult.scrapedProducts.products.length;
@@ -121,6 +125,7 @@ program
   .description('Drop database, clean media, and run full pipeline: setup db, fetch links, scrape, and save to database')
   .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
   .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
+  .option('-i, --images', 'Download product images', false)
   .action(async (options) => {
     console.log('=== Starting fresh pipeline ===\n');
 
@@ -151,6 +156,7 @@ program
     const scrapeResult = await scrapeProduct({
       test: options.test,
       saveToDatabase: true,
+      downloadImages: options.images,
     });
 
     const productCount = scrapeResult.scrapedProducts.products.length;
@@ -166,6 +172,7 @@ program
   .command('update')
   .description('Update stale products that have not been updated in X days (0 = update all)')
   .option('-d, --days <number>', 'Number of days since last update (0 = all)', parseInt, 0)
+  .option('-i, --images', 'Download product images', false)
   .action(async (options) => {
     if (options.days === 0) {
       console.log('Updating all products...');
@@ -173,7 +180,10 @@ program
       console.log(`Updating products not updated in the last ${options.days} days...`);
     }
 
-    const result = await updateStaleProducts(options.days);
+    const result = await updateStaleProducts({
+      days: options.days,
+      downloadImages: options.images,
+    });
 
     console.log('');
     console.log('=== Update complete ===');

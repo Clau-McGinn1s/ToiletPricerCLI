@@ -127,7 +127,7 @@ function parsePriceText(rawText: string): PriceInfo {
   return result;
 }
 
-async function scrapeProductPage(page: Page, url: string, type: string): Promise<ScrapeResult> {
+async function scrapeProductPage(page: Page, url: string, type: string, downloadImages: boolean = false): Promise<ScrapeResult> {
   const fullUrl = url.startsWith("http") ? url : `${BASE_URL}${url}`;
 
   await page.goto(fullUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -218,64 +218,67 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
     console.error(`Failed to get description for ${url}:`, err);
   }
 
-  // Try to get and download the product image
+  // Try to get and download the product image (if enabled)
   let imagePath: string | null = null;
-  const maxImageAttempts = 5;
 
-  for (let attempt = 1; attempt <= maxImageAttempts; attempt++) {
-    try {
-      let imageUrl: string | null = null;
+  if (downloadImages) {
+    const maxImageAttempts = 5;
 
-      if (attempt === 1) {
-        // First attempt: extract SKU from p element and construct URL
-        const skuNumber = await page.evaluate(() => {
-          const skuElement = document.querySelector('p.MuiTypography-root.sc-eDvSVe.gGsKAy.product-caption-info.product-sku.MuiTypography-body1');
-          if (skuElement) {
-            const text = skuElement.textContent?.trim() || '';
-            const match = text.match(/SKU\s+(\d+)/i);
-            if (match) {
-              return match[1];
+    for (let attempt = 1; attempt <= maxImageAttempts; attempt++) {
+      try {
+        let imageUrl: string | null = null;
+
+        if (attempt === 1) {
+          // First attempt: extract SKU from p element and construct URL
+          const skuNumber = await page.evaluate(() => {
+            const skuElement = document.querySelector('p.MuiTypography-root.sc-eDvSVe.gGsKAy.product-caption-info.product-sku.MuiTypography-body1');
+            if (skuElement) {
+              const text = skuElement.textContent?.trim() || '';
+              const match = text.match(/SKU\s+(\d+)/i);
+              if (match) {
+                return match[1];
+              }
             }
-          }
-          return null;
-        });
+            return null;
+          });
 
-        if (skuNumber) {
-          imageUrl = `https://cdn.homedepot.com.mx/productos/${skuNumber}/${skuNumber}-d.jpg`;
+          if (skuNumber) {
+            imageUrl = `https://cdn.homedepot.com.mx/productos/${skuNumber}/${skuNumber}-d.jpg`;
+          }
+        } else {
+          // Subsequent attempts: search for img with prefix and -d.jpg suffix
+          console.log(`Attempt ${attempt}/${maxImageAttempts}: Searching for -d.jpg image...`);
+          imageUrl = await page.evaluate(() => {
+            const prefix = 'https://cdn.homedepot.com.mx/productos/';
+            const images = document.querySelectorAll('img');
+            for (const img of images) {
+              const src = img.getAttribute('src');
+              if (src && src.startsWith(prefix) && src.endsWith('-d.jpg')) {
+                return src;
+              }
+            }
+            return null;
+          });
         }
-      } else {
-        // Subsequent attempts: search for img with prefix and -d.jpg suffix
-        console.log(`Attempt ${attempt}/${maxImageAttempts}: Searching for -d.jpg image...`);
-        imageUrl = await page.evaluate(() => {
-          const prefix = 'https://cdn.homedepot.com.mx/productos/';
-          const images = document.querySelectorAll('img');
-          for (const img of images) {
-            const src = img.getAttribute('src');
-            if (src && src.startsWith(prefix) && src.endsWith('-d.jpg')) {
-              return src;
-            }
-          }
-          return null;
-        });
-      }
 
-      if (imageUrl && productName) {
-        imagePath = await downloadImage(imageUrl, type, productName);
-        if (imagePath) {
+        if (imageUrl && productName) {
+          imagePath = await downloadImage(imageUrl, type, productName);
+          if (imagePath) {
+            break;
+          }
+        }
+
+        if (attempt < maxImageAttempts) {
+          console.log(`Attempt ${attempt}/${maxImageAttempts}: Image URL not found, retrying...`);
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      } catch (err) {
+        console.error(`Attempt ${attempt}/${maxImageAttempts}: Failed to get image for ${url}:`, err);
+        if (attempt >= maxImageAttempts) {
           break;
         }
-      }
-
-      if (attempt < maxImageAttempts) {
-        console.log(`Attempt ${attempt}/${maxImageAttempts}: Image URL not found, retrying...`);
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
-    } catch (err) {
-      console.error(`Attempt ${attempt}/${maxImageAttempts}: Failed to get image for ${url}:`, err);
-      if (attempt >= maxImageAttempts) {
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 
@@ -298,6 +301,7 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
 export interface ScrapeOptions {
   test?: boolean;
   saveToDatabase?: boolean;
+  downloadImages?: boolean;
 }
 
 function logScrapedProduct(name: string): void {
@@ -370,7 +374,7 @@ async function saveProductsToDatabase(
 export async function scrapeProduct(
   options: ScrapeOptions = {}
 ): Promise<ScrapeAndSaveResult> {
-  const { test = false, saveToDatabase = false } = options;
+  const { test = false, saveToDatabase = false, downloadImages = false } = options;
   let browser: Browser | undefined;
 
   try {
@@ -453,7 +457,7 @@ export async function scrapeProduct(
         console.log(`Scraping [${categoryKey}] ${i + 1}/${links.length} (Global: ${globalIndex}): ${link}`);
 
         try {
-          const result = await scrapeProductPage(page, link, categoryKey);
+          const result = await scrapeProductPage(page, link, categoryKey, downloadImages);
           products.push(result);
           logScrapedProduct(result.name);
           console.log(`Successfully scraped ${link}`);
