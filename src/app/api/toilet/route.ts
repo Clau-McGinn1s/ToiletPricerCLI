@@ -3,15 +3,10 @@ import { scrapeProduct } from "@/scraper/scraper";
 
 export async function GET() {
   try {
-    const result = await scrapeProduct();
+    const result = await scrapeProduct(true);
     return NextResponse.json({
-      "scrape-test-result": {
-        productName: result.productName,
-        currentPrice: result.priceInfo.currentPrice,
-        originalPrice: result.priceInfo.originalPrice,
-        promoMessage: result.priceInfo.promoMessage,
-        attributes: result.attributes,
-      },
+      message: `Scraped ${result.totalProducts} products and saved to PageScrapTest.json`,
+      ...result,
     });
   } catch (error) {
     return NextResponse.json(

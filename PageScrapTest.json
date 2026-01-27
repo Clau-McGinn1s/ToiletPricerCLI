@@ -1,90 +1,537 @@
 {
-  "productName": "SANITARIO DE DOS PIEZAS COBRIAL",
-  "priceInfo": {
-    "currentPrice": "$2,799.00",
-    "originalPrice": "$3,199.00",
-    "promoMessage": "Ahorras $400.00 | 12 MSI de $233.25"
-  },
-  "attributes": [
+  "totalProducts": 5,
+  "scrapedAt": "2026-01-27T00:55:28.404Z",
+  "products": [
     {
-      "id": "attValue-acabado",
-      "value": "Brillante"
+      "url": "https://www.homedepot.com.mx/p/glacier-bay-sanitario-de-dos-piezas-cobrial-2ec08w-163770",
+      "productName": "SANITARIO DE DOS PIEZAS COBRIAL",
+      "priceInfo": {
+        "currentPrice": "$2,799.00",
+        "originalPrice": "$3,199.00",
+        "promoMessage": "Ahorras $400.00 | 12 MSI de $233.25"
+      },
+      "attributes": [
+        {
+          "id": "attValue-acabado",
+          "value": "Brillante"
+        },
+        {
+          "id": "attValue-accesorios",
+          "value": "Sí"
+        },
+        {
+          "id": "attValue-alto",
+          "value": "82"
+        },
+        {
+          "id": "attValue-altura-de-la-taza",
+          "value": "-"
+        },
+        {
+          "id": "attValue-ancho",
+          "value": "45.7 cm"
+        },
+        {
+          "id": "attValue-capacidad-tamano",
+          "value": "82 x 72.4 x 45.7 cm"
+        },
+        {
+          "id": "attValue-color",
+          "value": "Blanco"
+        },
+        {
+          "id": "attValue-consumo-de-agua",
+          "value": "4.8 lt"
+        },
+        {
+          "id": "attValue-contenido-del-empaque",
+          "value": "1 sanitario"
+        },
+        {
+          "id": "attValue-desalojo",
+          "value": "1000 gr"
+        },
+        {
+          "id": "attValue-garantia-proveedor",
+          "value": "100 años"
+        },
+        {
+          "id": "attValue-largo",
+          "value": "82 cm"
+        },
+        {
+          "id": "attValue-material",
+          "value": "Cerámica"
+        },
+        {
+          "id": "attValue-modelo",
+          "value": "2ec08w"
+        },
+        {
+          "id": "attValue-peso",
+          "value": "41.640 kg"
+        },
+        {
+          "id": "attValue-presion",
+          "value": "-"
+        },
+        {
+          "id": "attValue-profundidad",
+          "value": "72.4 cm"
+        },
+        {
+          "id": "attValue-sistema-de-descarga",
+          "value": "-"
+        },
+        {
+          "id": "attValue-tipo",
+          "value": "Dos piezas"
+        },
+        {
+          "id": "attValue-tipo-de-taza",
+          "value": "-"
+        }
+      ]
     },
     {
-      "id": "attValue-accesorios",
-      "value": "Sí"
+      "url": "https://www.homedepot.com.mx/p/glacier-bay-sanitario-valenca-2-piezas-alargado-41-y-58-l-hueso-altura-confortable-valenca-150457",
+      "productName": "SANITARIO VALENCA 2 PIEZAS ALARGADO 4.1 Y 5.8 L HUESO ALTURA CONFORTABLE",
+      "priceInfo": {
+        "currentPrice": "$3,499.00",
+        "originalPrice": "Not found",
+        "promoMessage": "12 MSI de $291.58"
+      },
+      "attributes": [
+        {
+          "id": "attValue-accesorios",
+          "value": "Si"
+        },
+        {
+          "id": "attValue-activador-de-descarga",
+          "value": "Botón"
+        },
+        {
+          "id": "attValue-alto",
+          "value": "85.09"
+        },
+        {
+          "id": "attValue-altura-de-la-taza",
+          "value": "41.91"
+        },
+        {
+          "id": "attValue-ancho",
+          "value": "44.4 cm"
+        },
+        {
+          "id": "attValue-color",
+          "value": "Hueso"
+        },
+        {
+          "id": "attValue-consumo-de-agua",
+          "value": "4.1 y 5.8 lt"
+        },
+        {
+          "id": "attValue-desalojo",
+          "value": "900 gr"
+        },
+        {
+          "id": "attValue-exclusivo",
+          "value": "Exclusivo"
+        },
+        {
+          "id": "attValue-garantia-proveedor",
+          "value": "Garantia limitada de por vida"
+        },
+        {
+          "id": "attValue-largo",
+          "value": "30.4 cm"
+        },
+        {
+          "id": "attValue-material",
+          "value": "Cerámica"
+        },
+        {
+          "id": "attValue-modelo",
+          "value": "Valenca"
+        },
+        {
+          "id": "attValue-no-de-piezas",
+          "value": "2"
+        },
+        {
+          "id": "attValue-peso",
+          "value": "39.4 kg"
+        },
+        {
+          "id": "attValue-profundidad",
+          "value": "78.74 cm"
+        },
+        {
+          "id": "attValue-sistema-de-descarga",
+          "value": "Doble"
+        },
+        {
+          "id": "attValue-tipo",
+          "value": "Dos piezas"
+        },
+        {
+          "id": "attValue-tipo-de-altura",
+          "value": "Confortable"
+        },
+        {
+          "id": "attValue-tipo-de-taza",
+          "value": "Alargada"
+        },
+        {
+          "id": "attValue-trampa",
+          "value": "Expuesta"
+        }
+      ]
     },
     {
-      "id": "attValue-alto",
-      "value": "82"
+      "url": "https://www.homedepot.com.mx/p/glacier-bay-sanitario-valenca-2-piezas-alargado-41-y-58-l-blanco-altura-confortable-valenca-150454",
+      "productName": "SANITARIO VALENCA 2 PIEZAS ALARGADO 4.1 Y 5.8 L BLANCO ALTURA CONFORTABLE",
+      "priceInfo": {
+        "currentPrice": "$3,199.00",
+        "originalPrice": "Not found",
+        "promoMessage": "12 MSI de $266.58"
+      },
+      "attributes": [
+        {
+          "id": "attValue-accesorios",
+          "value": "Si"
+        },
+        {
+          "id": "attValue-activador-de-descarga",
+          "value": "Botón"
+        },
+        {
+          "id": "attValue-alto",
+          "value": "85.09"
+        },
+        {
+          "id": "attValue-altura-de-la-taza",
+          "value": "41.91"
+        },
+        {
+          "id": "attValue-ancho",
+          "value": "44.4 cm"
+        },
+        {
+          "id": "attValue-color",
+          "value": "Blanco"
+        },
+        {
+          "id": "attValue-consumo-de-agua",
+          "value": "4.1 y 5.8 lt"
+        },
+        {
+          "id": "attValue-desalojo",
+          "value": "900 gr"
+        },
+        {
+          "id": "attValue-exclusivo",
+          "value": "Exclusivo"
+        },
+        {
+          "id": "attValue-garantia-proveedor",
+          "value": "Garantia limitada de por vida"
+        },
+        {
+          "id": "attValue-largo",
+          "value": "30.4 cm"
+        },
+        {
+          "id": "attValue-material",
+          "value": "Cerámica"
+        },
+        {
+          "id": "attValue-modelo",
+          "value": "Valenca"
+        },
+        {
+          "id": "attValue-no-de-piezas",
+          "value": "2"
+        },
+        {
+          "id": "attValue-peso",
+          "value": "39.4 kg"
+        },
+        {
+          "id": "attValue-profundidad",
+          "value": "78.74 cm"
+        },
+        {
+          "id": "attValue-sistema-de-descarga",
+          "value": "Doble"
+        },
+        {
+          "id": "attValue-tipo",
+          "value": "Dos piezas"
+        },
+        {
+          "id": "attValue-tipo-de-altura",
+          "value": "Confortable"
+        },
+        {
+          "id": "attValue-tipo-de-taza",
+          "value": "Alargada"
+        },
+        {
+          "id": "attValue-trampa",
+          "value": "Expuesta"
+        }
+      ]
     },
     {
-      "id": "attValue-altura-de-la-taza",
-      "value": "-"
+      "url": "https://www.homedepot.com.mx/p/glacier-bay-sanitario-de-dos-piezas-pemberton-2rc08w-163772",
+      "productName": "SANITARIO DE DOS PIEZAS PEMBERTON",
+      "priceInfo": {
+        "currentPrice": "$2,499.00",
+        "originalPrice": "$2,829.00",
+        "promoMessage": "Ahorras $330.00 | 12 MSI de $208.25"
+      },
+      "attributes": [
+        {
+          "id": "attValue-acabado",
+          "value": "Brillante"
+        },
+        {
+          "id": "attValue-accesorios",
+          "value": "Sí"
+        },
+        {
+          "id": "attValue-alto",
+          "value": "82"
+        },
+        {
+          "id": "attValue-altura-de-la-taza",
+          "value": "-"
+        },
+        {
+          "id": "attValue-ancho",
+          "value": "45.7 cm"
+        },
+        {
+          "id": "attValue-capacidad-tamano",
+          "value": "82 x 45.7 x 67.3 cm"
+        },
+        {
+          "id": "attValue-color",
+          "value": "Blanco"
+        },
+        {
+          "id": "attValue-consumo-de-agua",
+          "value": "4.8 lt"
+        },
+        {
+          "id": "attValue-desalojo",
+          "value": "800 gr"
+        },
+        {
+          "id": "attValue-garantia-proveedor",
+          "value": "100 años"
+        },
+        {
+          "id": "attValue-largo",
+          "value": "82 cm"
+        },
+        {
+          "id": "attValue-material",
+          "value": "Cerámica"
+        },
+        {
+          "id": "attValue-modelo",
+          "value": "2rc08w"
+        },
+        {
+          "id": "attValue-peso",
+          "value": "39.380 kg"
+        },
+        {
+          "id": "attValue-presion",
+          "value": "-"
+        },
+        {
+          "id": "attValue-profundidad",
+          "value": "67.3 cm"
+        },
+        {
+          "id": "attValue-sistema-de-descarga",
+          "value": "-"
+        },
+        {
+          "id": "attValue-tipo",
+          "value": "Dos piezas"
+        },
+        {
+          "id": "attValue-tipo-de-taza",
+          "value": "-"
+        }
+      ]
     },
     {
-      "id": "attValue-ancho",
-      "value": "45.7 cm"
-    },
-    {
-      "id": "attValue-capacidad-tamano",
-      "value": "82 x 72.4 x 45.7 cm"
-    },
-    {
-      "id": "attValue-color",
-      "value": "Blanco"
-    },
-    {
-      "id": "attValue-consumo-de-agua",
-      "value": "4.8 lt"
-    },
-    {
-      "id": "attValue-contenido-del-empaque",
-      "value": "1 sanitario"
-    },
-    {
-      "id": "attValue-desalojo",
-      "value": "1000 gr"
-    },
-    {
-      "id": "attValue-garantia-proveedor",
-      "value": "100 años"
-    },
-    {
-      "id": "attValue-largo",
-      "value": "82 cm"
-    },
-    {
-      "id": "attValue-material",
-      "value": "Cerámica"
-    },
-    {
-      "id": "attValue-modelo",
-      "value": "2ec08w"
-    },
-    {
-      "id": "attValue-peso",
-      "value": "41.640 kg"
-    },
-    {
-      "id": "attValue-presion",
-      "value": "-"
-    },
-    {
-      "id": "attValue-profundidad",
-      "value": "72.4 cm"
-    },
-    {
-      "id": "attValue-sistema-de-descarga",
-      "value": "-"
-    },
-    {
-      "id": "attValue-tipo",
-      "value": "Dos piezas"
-    },
-    {
-      "id": "attValue-tipo-de-taza",
-      "value": "-"
+      "url": "https://www.homedepot.com.mx/p/american-standard-sanitario-de-2-piezas-reliant-3332128smx020-144174",
+      "productName": "SANITARIO DE 2 PIEZAS RELIANT",
+      "priceInfo": {
+        "currentPrice": "$3,449.00",
+        "originalPrice": "Not found",
+        "promoMessage": "12 MSI de $287.42"
+      },
+      "attributes": [
+        {
+          "id": "attValue-acabado",
+          "value": "Brillante"
+        },
+        {
+          "id": "attValue-accesorios",
+          "value": "Si"
+        },
+        {
+          "id": "attValue-activador-de-descarga",
+          "value": "Palanca"
+        },
+        {
+          "id": "attValue-alto",
+          "value": "72.2"
+        },
+        {
+          "id": "attValue-altura-de-la-taza",
+          "value": "38.1"
+        },
+        {
+          "id": "attValue-ancho",
+          "value": "45.6 cm"
+        },
+        {
+          "id": "attValue-capacidad-tamano",
+          "value": "72.2 x 45.6 x 70.6 cm"
+        },
+        {
+          "id": "attValue-caracteristicas-herraje",
+          "value": "Herrajes fluidmaster"
+        },
+        {
+          "id": "attValue-cierre-lento",
+          "value": "Sí"
+        },
+        {
+          "id": "attValue-color",
+          "value": "Blanco"
+        },
+        {
+          "id": "attValue-configuracion",
+          "value": "Individual"
+        },
+        {
+          "id": "attValue-consumo-de-agua",
+          "value": "4.8 lt"
+        },
+        {
+          "id": "attValue-contenido-del-empaque",
+          "value": "1 sanitario"
+        },
+        {
+          "id": "attValue-desalojo",
+          "value": "800 gr"
+        },
+        {
+          "id": "attValue-diametro",
+          "value": "0 cm"
+        },
+        {
+          "id": "attValue-distancia-de-la-trampa",
+          "value": "30.5"
+        },
+        {
+          "id": "attValue-espejo-de-agua",
+          "value": "228.6 x 203.2 mm"
+        },
+        {
+          "id": "attValue-espesor",
+          "value": "0 mm"
+        },
+        {
+          "id": "attValue-garantia-en-ceramica",
+          "value": "Limitada de por vida"
+        },
+        {
+          "id": "attValue-garantia-en-herrajes",
+          "value": "2 años"
+        },
+        {
+          "id": "attValue-garantia-proveedor",
+          "value": "100 años en porcelana"
+        },
+        {
+          "id": "attValue-herrajes",
+          "value": "Sí"
+        },
+        {
+          "id": "attValue-largo",
+          "value": "72.2 cm"
+        },
+        {
+          "id": "attValue-material",
+          "value": "Cerámica"
+        },
+        {
+          "id": "attValue-modelo",
+          "value": "3332128smx.020"
+        },
+        {
+          "id": "attValue-montaje",
+          "value": "Piso"
+        },
+        {
+          "id": "attValue-no-de-piezas",
+          "value": "2"
+        },
+        {
+          "id": "attValue-peso",
+          "value": "34 kg"
+        },
+        {
+          "id": "attValue-presentacion",
+          "value": "Dos piezas"
+        },
+        {
+          "id": "attValue-presion",
+          "value": "-"
+        },
+        {
+          "id": "attValue-profundidad",
+          "value": "70.6 cm"
+        },
+        {
+          "id": "attValue-sistema-de-descarga",
+          "value": "Sencilla"
+        },
+        {
+          "id": "attValue-tipo",
+          "value": "Dos piezas"
+        },
+        {
+          "id": "attValue-tipo-de-altura",
+          "value": "Estándar"
+        },
+        {
+          "id": "attValue-tipo-de-taza",
+          "value": "Redonda"
+        },
+        {
+          "id": "attValue-trampa",
+          "value": "Expuesta"
+        },
+        {
+          "id": "attValue-trampa-esmaltada",
+          "value": "Sí"
+        },
+        {
+          "id": "attValue-valvula-de-descarga",
+          "value": "2\""
+        }
+      ]
     }
   ]
 }
