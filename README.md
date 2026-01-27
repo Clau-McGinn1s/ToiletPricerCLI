@@ -1,6 +1,6 @@
 # ToiletAPI
 
-A web scraping CLI tool for extracting bathroom product data from Home Depot Mexico. Scrapes product information including prices, descriptions, specifications, and images for toilets, sinks, shower heads, and faucets.
+A web scraping tool with REST API for extracting and serving bathroom product data from Home Depot Mexico. Scrapes product information including prices, descriptions, specifications, and images for toilets, sinks, shower heads, and faucets. Data is stored in a MySQL database and exposed through a Next.js API for easy integration with other applications.
 
 ## Features
 
@@ -9,6 +9,7 @@ A web scraping CLI tool for extracting bathroom product data from Home Depot Mex
 - Download product images automatically
 - Store data in MySQL database
 - Update existing products with fresh data
+- **REST API** to query and retrieve product data with filtering support
 - Support for multiple product categories:
   - Toilets (WC)
   - Sinks
