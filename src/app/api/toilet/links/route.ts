@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -13,10 +13,14 @@ interface TargetUrls {
   urls: Record<string, string[]>;
 }
 
-export async function GET() {
+export async function GET(request : NextRequest) {
   try {
     const baseUrlsPath = path.join(process.cwd(), BASE_URLS_FILE);
     const targetUrlsPath = path.join(process.cwd(), TARGET_URLS_FILE);
+
+    const searchParams = request.nextUrl.searchParams;
+    const type = searchParams.get("type");
+
 
     // Read base URLs
     let baseUrls: BaseUrls = { urls: {} };
@@ -27,8 +31,18 @@ export async function GET() {
     // Read target URLs
     let targetUrls: TargetUrls = { urls: {} };
     let targetUrlsExist = false;
+    let typeQueryExits = false;
     if (fs.existsSync(targetUrlsPath)) {
       targetUrls = JSON.parse(fs.readFileSync(targetUrlsPath, "utf-8"));
+
+      if(type && Object.keys(targetUrls.urls).includes(type)){
+        const typeUrls = targetUrls.urls[type];
+        targetUrls = {urls: { [type] : typeUrls }}
+        typeQueryExits = true;
+      }else{
+        typeQueryExits = false;
+      }
+
       targetUrlsExist = true;
     }
 
@@ -53,7 +67,7 @@ export async function GET() {
         command: string;
       };
     } = {
-      message: targetUrlsExist
+      message: typeQueryExits ? `Found ${Object.keys(baseUrls.urls).length} categories with ${totalTargetLinks} ${type} links` : targetUrlsExist
         ? `Found ${Object.keys(baseUrls.urls).length} categories with ${totalTargetLinks} target links`
         : "Target URLs not yet fetched",
       baseUrls,
