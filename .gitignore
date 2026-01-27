@@ -43,7 +43,7 @@ scraper.log*
 next-env.d.ts
 
 # Ignore all files in directory
-directory_name/*
+media/*
 
 # But keep these placeholder files
-!directory_name/.gitkeep
+!media/.gitkeep
