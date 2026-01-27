@@ -224,29 +224,40 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
 
   for (let attempt = 1; attempt <= maxImageAttempts; attempt++) {
     try {
-      // On retry attempts, scroll to the image container element
-      if (attempt > 1) {
-        console.log(`Attempt ${attempt}/${maxImageAttempts}: Scrolling to image container...`);
-        await page.evaluate(() => {
-          const imageContainer = document.querySelector('div[class="swiper-zoom-container"]');
-          if (imageContainer) {
-            imageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        });
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-      }
+      let imageUrl: string | null = null;
 
-      // Find img element with src ending in "-d.jpg"
-      const imageUrl = await page.evaluate(() => {
-        const images = document.querySelectorAll('img');
-        for (const img of images) {
-          const src = img.getAttribute('src');
-          if (src && src.endsWith('-d.jpg')) {
-            return src;
+      if (attempt === 1) {
+        // First attempt: extract SKU from p element and construct URL
+        const skuNumber = await page.evaluate(() => {
+          const skuElement = document.querySelector('p.MuiTypography-root.sc-eDvSVe.gGsKAy.product-caption-info.product-sku.MuiTypography-body1');
+          if (skuElement) {
+            const text = skuElement.textContent?.trim() || '';
+            const match = text.match(/SKU\s+(\d+)/i);
+            if (match) {
+              return match[1];
+            }
           }
+          return null;
+        });
+
+        if (skuNumber) {
+          imageUrl = `https://cdn.homedepot.com.mx/productos/${skuNumber}/${skuNumber}-d.jpg`;
         }
-        return null;
-      });
+      } else {
+        // Subsequent attempts: search for img with prefix and -d.jpg suffix
+        console.log(`Attempt ${attempt}/${maxImageAttempts}: Searching for -d.jpg image...`);
+        imageUrl = await page.evaluate(() => {
+          const prefix = 'https://cdn.homedepot.com.mx/productos/';
+          const images = document.querySelectorAll('img');
+          for (const img of images) {
+            const src = img.getAttribute('src');
+            if (src && src.startsWith(prefix) && src.endsWith('-d.jpg')) {
+              return src;
+            }
+          }
+          return null;
+        });
+      }
 
       if (imageUrl && productName) {
         imagePath = await downloadImage(imageUrl, type, productName);
