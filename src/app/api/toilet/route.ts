@@ -1,11 +1,20 @@
 import { NextResponse } from "next/server";
-import { scrapeProduct } from "@/scraper/scraper";
+import { scrapeProduct, saveScrapedDataToDatabase } from "@/scraper/scraper";
 
 export async function GET() {
   try {
-    const result = await scrapeProduct(true);
+    // Scrape products and save to both file and database
+    const result = await scrapeProduct({
+      test: true,
+      saveToDatabase: true,
+      saveToFile: true,
+    });
+
+    const dbSuccessCount = result.databaseResults?.filter((r) => r.success).length ?? 0;
+    const totalProducts = result.scrapedProducts.products.length;
+
     return NextResponse.json({
-      message: `Scraped ${result.totalProducts} products and saved to PageScrapTest.json`,
+      message: `Scraped ${totalProducts} products. Saved ${dbSuccessCount} to database.`,
       ...result,
     });
   } catch (error) {
