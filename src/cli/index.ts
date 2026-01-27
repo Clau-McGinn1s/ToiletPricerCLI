@@ -46,9 +46,13 @@ program
   .command('fetch-links')
   .description('Fetch product links from Home Depot')
   .option('-l, --limit <number>', 'Maximum links per category', parseInt, 15)
+  .option('--no-filter', 'Disable filtering of links')
   .action(async (options) => {
     console.log('Fetching product links...');
-    const result = await fetchProductLinks(options.limit);
+    const result = await fetchProductLinks({
+      limit: options.limit,
+      applyFilters: options.filter,
+    });
     const totalLinks = Object.values(result.urls).reduce((sum, links) => sum + links.length, 0);
     console.log(`Fetched ${totalLinks} links across ${Object.keys(result.urls).length} categories`);
   });
@@ -83,6 +87,7 @@ program
   .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
   .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
   .option('-i, --images', 'Download product images', false)
+  .option('--no-filter', 'Disable filtering of links')
   .action(async (options) => {
     console.log('=== Starting full pipeline ===\n');
 
@@ -99,7 +104,10 @@ program
 
     // Step 3: Fetch links
     console.log('Step 3: Fetching product links...');
-    const linkResult = await fetchProductLinks(options.limit);
+    const linkResult = await fetchProductLinks({
+      limit: options.limit,
+      applyFilters: options.filter,
+    });
     const totalLinks = Object.values(linkResult.urls).reduce((sum, links) => sum + links.length, 0);
     console.log(`Fetched ${totalLinks} links across ${Object.keys(linkResult.urls).length} categories\n`);
 
@@ -126,6 +134,7 @@ program
   .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
   .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
   .option('-i, --images', 'Download product images', false)
+  .option('--no-filter', 'Disable filtering of links')
   .action(async (options) => {
     console.log('=== Starting fresh pipeline ===\n');
 
@@ -147,7 +156,10 @@ program
 
     // Step 4: Fetch links
     console.log('Step 4: Fetching product links...');
-    const linkResult = await fetchProductLinks(options.limit);
+    const linkResult = await fetchProductLinks({
+      limit: options.limit,
+      applyFilters: options.filter,
+    });
     const totalLinks = Object.values(linkResult.urls).reduce((sum, links) => sum + links.length, 0);
     console.log(`Fetched ${totalLinks} links across ${Object.keys(linkResult.urls).length} categories\n`);
 

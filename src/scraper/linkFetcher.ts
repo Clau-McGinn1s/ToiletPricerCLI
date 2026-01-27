@@ -105,7 +105,13 @@ async function fetchLinksFromCategory(
   return allLinks;
 }
 
-export async function fetchProductLinks(limit: number = 15): Promise<TargetUrls> {
+export interface FetchLinksOptions {
+  limit?: number;
+  applyFilters?: boolean;
+}
+
+export async function fetchProductLinks(options: FetchLinksOptions = {}): Promise<TargetUrls> {
+  const { limit = 15, applyFilters = true } = options;
   let browser: Browser | undefined;
 
   try {
@@ -122,14 +128,18 @@ export async function fetchProductLinks(limit: number = 15): Promise<TargetUrls>
       throw new Error("No URLs found in baseUrls.json");
     }
 
-    // Load filters
+    // Load filters if enabled
     const filtersPath = path.join(process.cwd(), FILTERS_FILE);
     let filtersData: FiltersConfig = {};
-    if (fs.existsSync(filtersPath)) {
-      filtersData = JSON.parse(fs.readFileSync(filtersPath, "utf-8"));
-      console.log("Loaded filters from filters.json");
+    if (applyFilters) {
+      if (fs.existsSync(filtersPath)) {
+        filtersData = JSON.parse(fs.readFileSync(filtersPath, "utf-8"));
+        console.log("Loaded filters from filters.json");
+      } else {
+        console.log("No filters.json found, proceeding without filters");
+      }
     } else {
-      console.log("No filters.json found, proceeding without filters");
+      console.log("Filtering disabled");
     }
 
     console.log(`Found ${categoryKeys.length} categories to fetch: ${categoryKeys.join(", ")}`);
