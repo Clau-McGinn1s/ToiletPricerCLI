@@ -103,6 +103,47 @@ program
   });
 
 program
+  .command('set-up:fresh')
+  .description('Drop database and run full pipeline: setup db, fetch links, scrape, and save to database')
+  .option('-t, --test', 'Run scraper in test mode (only 5 products per category)', false)
+  .option('-l, --limit <number>', 'Maximum links per category for fetch-links', parseInt, 15)
+  .action(async (options) => {
+    console.log('=== Starting fresh pipeline ===\n');
+
+    // Step 1: Drop database
+    console.log('Step 1: Dropping database...');
+    await dropDatabase();
+    console.log('');
+
+    // Step 2: Setup database
+    console.log('Step 2: Setting up database...');
+    const dbSetup = new DatabaseSetup();
+    await dbSetup.setup();
+    console.log('');
+
+    // Step 3: Fetch links
+    console.log('Step 3: Fetching product links...');
+    const linkResult = await fetchProductLinks(options.limit);
+    const totalLinks = Object.values(linkResult.urls).reduce((sum, links) => sum + links.length, 0);
+    console.log(`Fetched ${totalLinks} links across ${Object.keys(linkResult.urls).length} categories\n`);
+
+    // Step 4: Scrape and save to database
+    console.log('Step 4: Scraping products and saving to database...');
+    const scrapeResult = await scrapeProduct({
+      test: options.test,
+      saveToDatabase: true,
+    });
+
+    const productCount = scrapeResult.scrapedProducts.products.length;
+    const dbSuccessCount = scrapeResult.databaseResults?.filter(r => r.success).length ?? 0;
+
+    console.log('');
+    console.log('=== Fresh pipeline complete ===');
+    console.log(`Total products scraped: ${productCount}`);
+    console.log(`Products saved to database: ${dbSuccessCount}`);
+  });
+
+program
   .command('update')
   .description('Update stale products that have not been updated in X days (0 = update all)')
   .option('-d, --days <number>', 'Number of days since last update (0 = all)', parseInt, 0)
