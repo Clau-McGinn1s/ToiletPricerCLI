@@ -11,11 +11,22 @@ dotenv.config();
 
 const BASE_URL = "https://www.homedepot.com.mx";
 const TARGET_URLS_FILE = "src/scraper/urls/targetUrls.json";
+const FILTERS_FILE = "src/scraper/config/filters.json";
 const LOG_FILE = "scraper.log";
 const MEDIA_DIR = "src/media";
 
 interface TargetUrls {
   urls: Record<string, string[]>;
+}
+
+interface CategoryFilter {
+  filter: string[];
+  feature: string[];
+  default: string | null;
+}
+
+interface FiltersConfig {
+  [key: string]: CategoryFilter;
 }
 
 const PRODUCT_NAME_SELECTOR =
@@ -127,7 +138,18 @@ function parsePriceText(rawText: string): PriceInfo {
   return result;
 }
 
-async function scrapeProductPage(page: Page, url: string, type: string, downloadImages: boolean = false): Promise<ScrapeResult> {
+interface FeatureConfig {
+  features: string[];
+  defaultMatch: string | null;
+}
+
+async function scrapeProductPage(
+  page: Page,
+  url: string,
+  type: string,
+  downloadImages: boolean = false,
+  featureConfig: FeatureConfig = { features: [], defaultMatch: null }
+): Promise<ScrapeResult> {
   const fullUrl = url.startsWith("http") ? url : `${BASE_URL}${url}`;
 
   await page.goto(fullUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -282,6 +304,18 @@ async function scrapeProductPage(page: Page, url: string, type: string, download
     }
   }
 
+  // Find match from features in description
+  let matchValue: string | null = featureConfig.defaultMatch;
+  if (productDescription && featureConfig.features.length > 0) {
+    const descLower = productDescription.toLowerCase();
+    for (const feature of featureConfig.features) {
+      if (descLower.includes(feature.toLowerCase())) {
+        matchValue = feature;
+        break;
+      }
+    }
+  }
+
   return {
     name: productName || "Product name not found",
     price: priceInfo.price,
@@ -292,7 +326,7 @@ async function scrapeProductPage(page: Page, url: string, type: string, download
     width: widthVal,
     length: lengthVal,
     type: type,
-    match: null,
+    match: matchValue,
     image: imagePath,
     url: fullUrl
   };
@@ -391,6 +425,14 @@ export async function scrapeProduct(
       throw new Error("targetUrls.json is empty. Please run 'npm run cli -- fetch-links' first to fetch product links.");
     }
 
+    // Load filters for feature matching
+    const filtersPath = path.join(process.cwd(), FILTERS_FILE);
+    let filtersData: FiltersConfig = {};
+    if (fs.existsSync(filtersPath)) {
+      filtersData = JSON.parse(fs.readFileSync(filtersPath, "utf-8"));
+      console.log("Loaded filters for feature matching");
+    }
+
     const categoryKeys = Object.keys(targetUrlsData.urls);
 
     // Count total links
@@ -451,13 +493,20 @@ export async function scrapeProduct(
 
       console.log(`\n=== Scraping category: ${categoryKey} (${links.length} links) ===`);
 
+      // Get feature config for this category
+      const categoryFilter = filtersData[categoryKey];
+      const featureConfig: FeatureConfig = {
+        features: categoryFilter?.feature || [],
+        defaultMatch: categoryFilter?.default || null,
+      };
+
       for (let i = 0; i < links.length; i++) {
         const link = links[i];
         globalIndex++;
         console.log(`Scraping [${categoryKey}] ${i + 1}/${links.length} (Global: ${globalIndex}): ${link}`);
 
         try {
-          const result = await scrapeProductPage(page, link, categoryKey, downloadImages);
+          const result = await scrapeProductPage(page, link, categoryKey, downloadImages, featureConfig);
           products.push(result);
           logScrapedProduct(result.name);
           console.log(`Successfully scraped ${link}`);

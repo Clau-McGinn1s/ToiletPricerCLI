@@ -2,19 +2,23 @@
 
     "wc":{
          "filter" : ["tanque", "paquete", "kit", "taza"],
-        "feature" :  ["redondo", "redonda", "alargado", "alargada"]
+        "feature" :  ["redondo", "redonda", "alargado", "alargada"],
+        "default" : "redondo"
     },
      "shower-head":{
          "filter" : ["kit"],
-        "feature" :  []
+        "feature" :  [],
+        "default" : null
     },
     "faucet":{
         "filter" : ["cocina", "pared", "fregadero"],
-        "feature" :  ["monomando", "mezcladora", "duomando"]
+        "feature" :  ["monomando", "mezcladora", "duomando"],
+        "default" : "monomando"
     },
     "sink":{
         "filter" : ["llave" , "kit"],
-        "feature" :  ["perforaciones", "3 perforaciones",  "sobreponer", "mezcladora", "monomando", "empotrable"]
+        "feature" :  ["perforaciones", "3 perforaciones",  "sobreponer", "mezcladora", "monomando", "empotrable"],
+        "default" : "monomando"
     }
     
 
