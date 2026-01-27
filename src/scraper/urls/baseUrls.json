@@ -1,5 +1,8 @@
 {
     "urls": {
-      "wc" : "https://www.homedepot.com.mx/b/banos/sanitarios-y-accesorios/sanitarios-de-dos-piezas"
+      "shower-head" : "https://www.homedepot.com.mx/b/banos/regaderas-y-accesorios/regaderas-5722-107-26",
+      "wc" : "https://www.homedepot.com.mx/b/banos/sanitarios-y-accesorios/sanitarios-de-dos-piezas",
+      "faucet" : "https://www.homedepot.com.mx/s/mezcladorA",
+      "sink"  :"https://www.homedepot.com.mx/b/banos/muebles-para-bano-y-lavabos/lavabos-y-ovalines"
     }
 }

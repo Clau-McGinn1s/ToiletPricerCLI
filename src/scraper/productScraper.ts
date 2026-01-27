@@ -61,72 +61,45 @@ function sanitizeFileName(name: string): string {
 }
 
 async function downloadImage(
-  page: Page,
   imageUrl: string,
   productType: string,
   productName: string
 ): Promise<string | null> {
-  const maxAttempts = 5;
+  try {
+    // Create directory path
+    const sanitizedName = sanitizeFileName(productName);
+    const dirPath = path.join(process.cwd(), MEDIA_DIR, productType);
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      // On retry attempts, scroll to the image container element
-      if (attempt > 1) {
-        console.log(`Attempt ${attempt}/${maxAttempts}: Scrolling to image container...`);
-        await page.evaluate(() => {
-          const imageContainer = document.querySelector('div[style*="cursor: crosshair"][style*="user-select: none"]');
-          if (imageContainer) {
-            imageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        });
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-      }
+    // Ensure directory exists
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
 
-      // Create directory path
-      const sanitizedName = sanitizeFileName(productName);
-      const dirPath = path.join(process.cwd(), MEDIA_DIR, productType);
+    // Get file extension from URL
+    const urlPath = new URL(imageUrl).pathname;
+    const ext = path.extname(urlPath) || '.jpg';
+    const fileName = `${sanitizedName}${ext}`;
+    const filePath = path.join(dirPath, fileName);
 
-      // Ensure directory exists
-      if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
-      }
-
-      // Get file extension from URL
-      const urlPath = new URL(imageUrl).pathname;
-      const ext = path.extname(urlPath) || '.jpg';
-      const fileName = `${sanitizedName}${ext}`;
-      const filePath = path.join(dirPath, fileName);
-
-      // Download image
-      const response = await fetch(imageUrl);
-      if (!response.ok) {
-        console.error(`Attempt ${attempt}/${maxAttempts}: Failed to download image: ${response.status}`);
-        if (attempt < maxAttempts) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          continue;
-        }
-        return null;
-      }
-
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      fs.writeFileSync(filePath, buffer);
-
-      // Return relative path for database storage
-      const relativePath = path.join(MEDIA_DIR, productType, fileName);
-      console.log(`Image saved: ${relativePath}`);
-      return relativePath;
-    } catch (err) {
-      console.error(`Attempt ${attempt}/${maxAttempts}: Error downloading image: ${err}`);
-      if (attempt < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        continue;
-      }
+    // Download image
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      console.error(`Failed to download image: ${response.status}`);
       return null;
     }
-  }
 
-  return null;
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    fs.writeFileSync(filePath, buffer);
+
+    // Return relative path for database storage
+    const relativePath = path.join(MEDIA_DIR, productType, fileName);
+    console.log(`Image saved: ${relativePath}`);
+    return relativePath;
+  } catch (err) {
+    console.error(`Error downloading image: ${err}`);
+    return null;
+  }
 }
 
 function parsePriceText(rawText: string): PriceInfo {
@@ -247,24 +220,52 @@ async function scrapeProductPage(page: Page, url: string, type: string): Promise
 
   // Try to get and download the product image
   let imagePath: string | null = null;
-  try {
-    // Find img element with src ending in "-d.jpg"
-    const imageUrl = await page.evaluate(() => {
-      const images = document.querySelectorAll('img');
-      for (const img of images) {
-        const src = img.getAttribute('src');
-        if (src && src.endsWith('-d.jpg')) {
-          return src;
+  const maxImageAttempts = 5;
+
+  for (let attempt = 1; attempt <= maxImageAttempts; attempt++) {
+    try {
+      // On retry attempts, scroll to the image container element
+      if (attempt > 1) {
+        console.log(`Attempt ${attempt}/${maxImageAttempts}: Scrolling to image container...`);
+        await page.evaluate(() => {
+          const imageContainer = document.querySelector('div[class="swiper-zoom-container"]');
+          if (imageContainer) {
+            imageContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+
+      // Find img element with src ending in "-d.jpg"
+      const imageUrl = await page.evaluate(() => {
+        const images = document.querySelectorAll('img');
+        for (const img of images) {
+          const src = img.getAttribute('src');
+          if (src && src.endsWith('-d.jpg')) {
+            return src;
+          }
+        }
+        return null;
+      });
+
+      if (imageUrl && productName) {
+        imagePath = await downloadImage(imageUrl, type, productName);
+        if (imagePath) {
+          break;
         }
       }
-      return null;
-    });
 
-    if (imageUrl && productName) {
-      imagePath = await downloadImage(page, imageUrl, type, productName);
+      if (attempt < maxImageAttempts) {
+        console.log(`Attempt ${attempt}/${maxImageAttempts}: Image URL not found, retrying...`);
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    } catch (err) {
+      console.error(`Attempt ${attempt}/${maxImageAttempts}: Failed to get image for ${url}:`, err);
+      if (attempt >= maxImageAttempts) {
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-  } catch (err) {
-    console.error(`Failed to get image for ${url}:`, err);
   }
 
   return {
