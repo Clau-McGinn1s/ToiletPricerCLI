@@ -277,7 +277,7 @@ program
         }
       }
     } catch (err) {
-      console.log(`No process found on port ${port}`);
+      console.log(`No process found on port ${port}, error:`, err);
     }
 
     console.log(`\nBuilding application...`);

@@ -1,5 +1,5 @@
 import mysql, { ResultSetHeader } from 'mysql2/promise';
-import { Product, ProductInput, InsertResult, RawProductInput } from './product.types';
+import { ProductInput, InsertResult, RawProductInput } from './product.types';
 import { error } from 'console';
 
 export async function insertProduct(
