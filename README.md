@@ -408,17 +408,25 @@ The "Download PDF" button generates a PDF containing:
 - Total price for all selected products
 
 ### Usage
+1. Set up your database (Skip if already done):
+   ```bash
+   npm run cli -- set-up:fresh -t -l 5
+   ```
+   > **Note:** You don't need to scrap and download the images to safely use the demo, a placeholder will take it's place if the images are missing. You can add  `--no-images`  to the set up command to skip the image download process entirely. 
 
-1. Start the server:
+2. Start the server:
    ```bash
    npm run cli -- run-server
    ```
 
-2. Navigate to `http://localhost:3000/demo`
+3. Navigate to `http://localhost:3000/demo`
 
-3. Select products from each category dropdown
+4. Select products from each category dropdown
 
-4. Click "Download PDF" to export your selection
+5. Click "Download PDF" to export your selection
+
+
+
 
 ## Quick Start
 [Jump to Installation](#installation)
