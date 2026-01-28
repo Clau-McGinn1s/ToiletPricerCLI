@@ -1,6 +1,8 @@
-# ToiletAPI
+# ToiletPricerCLI
 
 A web scraping tool with REST API for extracting and serving bathroom product data from Home Depot Mexico. Scrapes product information including prices, descriptions, specifications, and images for toilets, sinks, shower heads, and faucets. Data is stored in a MySQL database and exposed through a Next.js API for easy integration with other applications.
+
+The project includes an interactive **Bathroom Builder Demo** that allows users to select products from each category, view details and images, see a total price calculation, and download a PDF summary of their selection.
 
 ## Features
 
@@ -10,6 +12,8 @@ A web scraping tool with REST API for extracting and serving bathroom product da
 - Store data in MySQL database
 - Update existing products with fresh data
 - **REST API** to query and retrieve product data with filtering support
+- **Interactive Demo** to build a bathroom setup with product selection
+- **PDF Export** to download selected products with images and details
 - Support for multiple product categories:
   - Toilets (WC)
   - Sinks
@@ -233,6 +237,11 @@ Scrapes detailed product data from individual product pages.
 - Retries up to 5 times
 - Images saved to `public/media/{category}/`
 
+**Log File:**
+- Each scraped product is logged to `scraper.log` in the project root
+- Format: `{product name} scraped at {ISO timestamp}`
+- Useful for tracking progress and debugging failed scrapes
+
 ### Update Products (`src/scraper/updateProducts.ts`)
 
 Updates existing products in the database with fresh data.
@@ -341,6 +350,8 @@ Defines category URLs to scrape:
 }
 ```
 
+<small>You may add another link but the scraping won't work as intended unless a filter is added too</small>
+
 ### `src/scraper/config/filters.json`
 
 Defines filters and features for each category:
@@ -360,6 +371,44 @@ Defines filters and features for each category:
 | `filter` | Words that exclude a product if found in link text |
 | `feature` | Words to search in description for `match` field |
 | `default` | Default value for `match` if no feature found |
+
+## Demo Page
+
+The application includes an interactive demo at `/demo` that showcases the scraped product data.
+
+![Demo screenshot](image.png)
+
+### Features
+
+- **Product Selection**: Choose one product from each category (Toilet, Sink, Faucet, Shower Head)
+- **Live Preview**: View product image, name, description, and price for each selection
+- **Price Calculation**: Automatic total price calculation for all selected products
+- **PDF Download**: Export your selection as a single-page PDF document
+
+### PDF Export
+
+The "Download PDF" button generates a PDF containing:
+
+- Product image (embedded)
+- Product name
+- Current price (and original price if on sale)
+- Color
+- Description (truncated)
+- Direct link to Home Depot product page
+- Total price for all selected products
+
+### Usage
+
+1. Start the server:
+   ```bash
+   npm run cli -- run-server
+   ```
+
+2. Navigate to `http://localhost:3000/demo`
+
+3. Select products from each category dropdown
+
+4. Click "Download PDF" to export your selection
 
 ## Quick Start
 
