@@ -13,7 +13,7 @@ const BASE_URL = "https://www.homedepot.com.mx";
 const TARGET_URLS_FILE = "src/scraper/urls/targetUrls.json";
 const FILTERS_FILE = "src/scraper/config/filters.json";
 const LOG_FILE = "scraper.log";
-const MEDIA_DIR = "src/media";
+const MEDIA_DIR = "public/media";
 
 interface TargetUrls {
   urls: Record<string, string[]>;
@@ -102,8 +102,8 @@ async function downloadImage(
     const buffer = Buffer.from(arrayBuffer);
     fs.writeFileSync(filePath, buffer);
 
-    // Return relative path for database storage
-    const relativePath = path.join(MEDIA_DIR, productType, fileName);
+    // Return relative path for database storage (pattern: /media/{type}/name.file)
+    const relativePath = `/media/${productType}/${fileName}`;
     console.log(`Image saved: ${relativePath}`);
     return relativePath;
   } catch (err) {
@@ -448,7 +448,7 @@ export async function scrapeProduct(
     console.log(`Found ${categoryKeys.length} categories with ${totalLinks} total links`);
 
     browser = await puppeteer.launch({
-      headless: "new",
+      headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 

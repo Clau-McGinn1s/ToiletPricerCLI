@@ -146,7 +146,7 @@ export async function fetchProductLinks(options: FetchLinksOptions = {}): Promis
     console.log(`Limit per category: ${limit}\n`);
 
     browser = await puppeteer.launch({
-      headless: "new",
+      headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 

@@ -9,12 +9,20 @@ export default function Home() {
           Web scraping tool with REST API for bathroom product data from Home Depot Mexico
         </p>
 
-        <a
-          href="/api/toilet"
-          className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg mb-12 transition-colors"
-        >
-          Go to API &rarr;
-        </a>
+        <div className="flex gap-4 justify-center mb-12">
+          <a
+            href="/api/toilet"
+            className="inline-block bg-blue-600 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            Go to API &rarr;
+          </a>
+          <a
+            href="/demo"
+            className="inline-block bg-zinc-700 hover:bg-zinc-800 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            View Demo &rarr;
+          </a>
+        </div>
 
         <div className="text-left bg-white dark:bg-zinc-800 rounded-lg p-6 shadow-lg">
           <h2 className="text-xl font-semibold text-zinc-900 dark:text-white mb-4">

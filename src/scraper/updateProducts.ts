@@ -8,7 +8,7 @@ import { ProductRow } from "../database/config";
 
 dotenv.config();
 
-const MEDIA_DIR = "src/media";
+const MEDIA_DIR = "public/media";
 
 const PRODUCT_NAME_SELECTOR =
   'h1.MuiTypography-root.sc-eDvSVe.jEoTgR.product-name.MuiTypography-body1[weight="light"]';
@@ -107,7 +107,8 @@ async function downloadImage(
     const buffer = Buffer.from(arrayBuffer);
     fs.writeFileSync(filePath, buffer);
 
-    const relativePath = path.join(MEDIA_DIR, productType, fileName);
+    // Return relative path for database storage (pattern: /media/{type}/name.file)
+    const relativePath = `/media/${productType}/${fileName}`;
     console.log(`Image saved: ${relativePath}`);
     return relativePath;
   } catch (err) {
@@ -397,7 +398,7 @@ export async function updateStaleProducts(options: UpdateOptions = {}): Promise<
     console.log(`Found ${productsToUpdate.length} products to update.`);
 
     browser = await puppeteer.launch({
-      headless: "new",
+      headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 

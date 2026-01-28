@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const MEDIA_DIR = 'src/media';
+const MEDIA_DIR = 'public/media';
 
 export function cleanMedia(): void {
   if (!fs.existsSync(MEDIA_DIR)) {
