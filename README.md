@@ -7,9 +7,9 @@ The project includes an interactive **Bathroom Builder Demo** that allows users 
 ### Project Report  
 
 Full report (Google Doc): [ToiletPricerCLI - Report.docx](https://docs.google.com/document/d/1tFdrC9zGOSFDm5NEoHLCrG3lGeeRJrcIhAB3SNc_ySw/edit?usp=sharing)  
-PDF version: [ToilerPricerCLI - Report.pdf](https://drive.google.com/file/d/1QTEgs_efzHFqnaNJJdvyZWWHs2Zq_Ku2/view?usp=sharing)
+PDF version: [ToiletPricerCLI - Report.pdf](https://drive.google.com/file/d/1CTHa-OcaGamQyxjXUHHsVu5Hggcz6eiE/view?usp=sharing)
 
-[Jump to Installation](#installation)  -  [Jump to QuickStart](#quick-start)
+[Go to Installation](#installation)  -  [Go to QuickStart](#quick-start)
 
 ## Features
 
@@ -46,7 +46,7 @@ PDF version: [ToilerPricerCLI - Report.pdf](https://drive.google.com/file/d/1QTE
    npm install
    ```
 
-   [Jump to QuickStart](#quick-start)
+   [Go to QuickStart](#quick-start)
 
 
 ## Environment Setup
@@ -429,7 +429,7 @@ The "Download PDF" button generates a PDF containing:
 
 
 ## Quick Start
-[Jump to Installation](#installation)
+[Go to Installation](#installation)
 
 1. Setup environment:
    ```bash
