@@ -1,8 +1,15 @@
 # ToiletPricerCLI
 
-A web scraping tool with REST API for extracting and serving bathroom product data from Home Depot Mexico. Scrapes product information including prices, descriptions, specifications, and images for toilets, sinks, shower heads, and faucets. Data is stored in a MySQL database and exposed through a Next.js API for easy integration with other applications.
+A web scraping tool with a REST API for extracting and serving bathroom product data from Home Depot Mexico. It scrapes product information, including prices, descriptions, specifications and images, for toilets, sinks, shower heads and faucets. Data is stored in a MySQL database and exposed through a Next.js API for easy integration with other applications.
 
 The project includes an interactive **Bathroom Builder Demo** that allows users to select products from each category, view details and images, see a total price calculation, and download a PDF summary of their selection.
+
+### Project Report  
+
+Full report (Google Doc): [ToiletPricerCLI - Report.docx](https://docs.google.com/document/d/1tFdrC9zGOSFDm5NEoHLCrG3lGeeRJrcIhAB3SNc_ySw/edit?usp=sharing)  
+PDF version: [ToilerPricerCLI - Report.pdf](https://drive.google.com/file/d/1QTEgs_efzHFqnaNJJdvyZWWHs2Zq_Ku2/view?usp=sharing)
+
+[Jump to Installation](#installation)  -  [Jump to QuickStart](#quick-start)
 
 ## Features
 
@@ -38,6 +45,9 @@ The project includes an interactive **Bathroom Builder Demo** that allows users 
    ```bash
    npm install
    ```
+
+   [Jump to QuickStart](#quick-start)
+
 
 ## Environment Setup
 
@@ -411,6 +421,7 @@ The "Download PDF" button generates a PDF containing:
 4. Click "Download PDF" to export your selection
 
 ## Quick Start
+[Jump to Installation](#installation)
 
 1. Setup environment:
    ```bash
