@@ -10,7 +10,6 @@
     "cli": "npx tsx src/cli/index.ts"
   },
   "dependencies": {
-    "cheerio": "^1.2.0",
     "commander": "^14.0.2",
     "dotenv": "^17.2.3",
     "mysql2": "^3.16.2",
