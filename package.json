@@ -12,6 +12,7 @@
   "dependencies": {
     "commander": "^14.0.2",
     "dotenv": "^17.2.3",
+    "jspdf": "^4.0.0",
     "mysql2": "^3.16.2",
     "next": "16.1.4",
     "puppeteer": "^24.36.0",

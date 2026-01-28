@@ -76,7 +76,7 @@ The `products` table stores all scraped product data:
 | `length` | DECIMAL(8,2) | Length dimension |
 | `type` | VARCHAR(50) | Product category (wc, sink, faucet, shower-head) |
 | `match_field` | VARCHAR(255) | Matched feature from filters |
-| `image` | VARCHAR(500) | Relative path to downloaded image |
+| `image` | VARCHAR(500) | Relative path to downloaded image (`/media/{type}/{name}.jpg`) |
 | `url` | VARCHAR(355) | Source URL |
 | `created_at` | TIMESTAMP | Record creation time |
 | `updated_at` | TIMESTAMP | Last update time |
@@ -176,7 +176,7 @@ npm run cli -- clean-media
 ```
 
 #### `run-server`
-Kill any process on the server port and start the development server.
+Kill any process on the server port, build the application, and start the development server.
 
 ```bash
 npm run cli -- run-server [options]
@@ -185,6 +185,8 @@ npm run cli -- run-server [options]
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-p, --port <number>` | Port number | `PORT` env variable or `3000` |
+
+**Note:** This command runs `npm run build` before starting the server to ensure the latest changes are compiled.
 
 Examples:
 ```bash
@@ -229,7 +231,7 @@ Scrapes detailed product data from individual product pages.
 - First attempts to construct URL from SKU: `https://cdn.homedepot.com.mx/productos/{SKU}/{SKU}-d.jpg`
 - Falls back to searching page for images matching the CDN pattern
 - Retries up to 5 times
-- Images saved to `src/media/{category}/`
+- Images saved to `public/media/{category}/`
 
 ### Update Products (`src/scraper/updateProducts.ts`)
 

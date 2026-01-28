@@ -280,11 +280,19 @@ program
       console.log(`No process found on port ${port}`);
     }
 
-    console.log(`\nStarting development server on port ${port}...`);
-    console.log('Press Ctrl+C to stop the server\n');
-
-    // Spawn npm run dev
+    console.log(`\nBuilding application...`);
     const npmCmd = isWindows ? 'npm.cmd' : 'npm';
+
+    try {
+      execSync(`${npmCmd} run build`, { stdio: 'inherit' });
+      console.log('Build complete.\n');
+    } catch (err) {
+      console.error('Build failed:', err);
+      process.exit(1);
+    }
+
+    console.log(`Starting development server on port ${port}...`);
+    console.log('Press Ctrl+C to stop the server\n');
     const child = spawn(npmCmd, ['run', 'dev'], {
       stdio: 'inherit',
       shell: true,

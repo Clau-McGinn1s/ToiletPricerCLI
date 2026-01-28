@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { generateBathroomPDF, PdfProductEntry } from "@/utils/pdfOutput";
 
 interface Product {
   id: number;
@@ -14,6 +15,7 @@ interface Product {
   image: string | null;
   type: string;
   match_field: string | null;
+  url: string | null;
 }
 
 interface ProductsByType {
@@ -97,6 +99,35 @@ export default function DemoPage() {
     return typeof price === "string" ? parseFloat(price) || 0 : price;
   };
 
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setGeneratingPdf(true);
+    try {
+      const pdfProducts: PdfProductEntry[] = PRODUCT_TYPES
+        .filter((type) => selected[type.key] !== null)
+        .map((type) => ({
+          label: type.label,
+          product: {
+            name: selected[type.key]!.name,
+            price: selected[type.key]!.price,
+            price_alt: selected[type.key]!.price_alt,
+            color: selected[type.key]!.color,
+            description: selected[type.key]!.description,
+            image: selected[type.key]!.image,
+            url: selected[type.key]!.url,
+          },
+        }));
+
+      await generateBathroomPDF(pdfProducts, totalPrice);
+    } catch (err) {
+      console.error("Failed to generate PDF:", err);
+      alert("Failed to generate PDF. Please try again.");
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
   const totalPrice = PRODUCT_TYPES.reduce(
     (sum, type) => sum + getPrice(selected[type.key]),
     0
@@ -137,9 +168,9 @@ export default function DemoPage() {
           {/* Header */}
           <div className="grid grid-cols-12 gap-4 p-4 bg-zinc-100 dark:bg-zinc-700 font-semibold text-zinc-700 dark:text-zinc-200 text-sm">
             <div className="col-span-2">Type</div>
-            <div className="col-span-2">Image</div>
-            <div className="col-span-3">Product</div>
-            <div className="col-span-3">Description</div>
+            <div className="col-span-3 text-center">Product</div>
+            <div className="col-span-2 text-center">Image</div>
+            <div className="col-span-3 text-center">Description</div>
             <div className="col-span-2 text-right">Price</div>
           </div>
 
@@ -158,23 +189,6 @@ export default function DemoPage() {
                   <span className="font-medium text-zinc-900 dark:text-white">
                     {type.label}
                   </span>
-                </div>
-
-                {/* Image */}
-                <div className="col-span-2">
-                  {product?.image ? (
-                    <Image
-                      src={"/media/default.jpg"}
-                      alt={product.name}
-                      className="w-20 h-20 object-cover rounded-lg bg-zinc-100 dark:bg-zinc-700"
-                      width={600}
-                      height={600}
-                    />
-                  ) : (
-                    <div className="w-20 h-20 bg-zinc-200 dark:bg-zinc-700 rounded-lg flex items-center justify-center">
-                      <span className="text-zinc-400 text-xs">No image</span>
-                    </div>
-                  )}
                 </div>
 
                 {/* Selector */}
@@ -200,6 +214,28 @@ export default function DemoPage() {
                       No products available
                     </span>
                   )}
+                </div>
+
+                  {/* Image */}
+                <div className="col-span-2 mx-auto">
+                  {product?.image ? (
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      className="w-30 h-30 object-cover rounded-lg bg-zinc-100 dark:bg-zinc-700"
+                      width={600}
+                      height={600}
+                    />
+                  ) : (
+                     <Image
+                      src={"/media/default.jpg"}
+                      alt={"default-img"}
+                      className="w-20 h-20 object-cover rounded-lg bg-zinc-100 dark:bg-zinc-700"
+                      width={600}
+                      height={600}
+                    />
+                  )
+                  }
                 </div>
 
                 {/* Description */}
@@ -239,13 +275,20 @@ export default function DemoPage() {
           </div>
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 flex justify-center gap-4 items-center">
           <Link
             href="/"
             className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
           >
             &larr; Back to Home
           </Link>
+          <button
+            onClick={handleDownloadPDF}
+            disabled={generatingPdf}
+            className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+          >
+            {generatingPdf ? "Generating PDF..." : "Download PDF"}
+          </button>
         </div>
       </div>
     </div>
